@@ -76,14 +76,13 @@
         b {
             font-weight: bold;
         }
-        /* Justify text in the methodology content div */
-        .methodology-content {
+        /* Removed text-align: justify for better mobile readability */
+        /* .methodology-content {
             text-align: justify;
-        }
-        /* Justify text in the key takeaways list items */
-        #key-takeaways-list li {
+        } */
+        /* .key-takeaways-list li {
             text-align: justify;
-        }
+        } */
     </style>
 </head>
 <body class="bg-gray-100 p-4 min-h-screen">
@@ -1005,7 +1004,7 @@
 
                         if (!isDuplicate(normalizedNewPoll, currentPolls, 3)) { // Check against last 3 polls for duplicates
                             currentPolls.shift(); // Remove oldest poll
-                            currentPolls.push(normalizedNewPoll); // Add new normalized poll
+                            currentsPolls.push(normalizedNewPoll); // Add new normalized poll
                             showTempMessage("New poll added to simulation!", "text-green-600");
                         } else {
                             showTempMessage("New poll is a duplicate of recent polls and was not added.", "text-gray-500");
