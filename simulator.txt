@@ -1243,7 +1243,7 @@
                             pluralityProbabilities[p.name] = (pluralityCounter[p.name] / numSimulations * 100).toFixed(2);
                             averageSeats[p.name] = {
                                 constituency: (seatTotaler[p.name].constituency / numSimulations), 
-                                regional: (seatTotaler[p.name].regional / numSimulations),   
+                                regional: (seatTotaler[p.name].regional / numSimulations),  
                                 total: (seatTotaler[p.name].total / numSimulations)                          };
                         });
                         
@@ -1785,4 +1785,3 @@
     </script>
 </body>
 </html>
-
