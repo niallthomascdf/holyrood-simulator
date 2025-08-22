@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html><!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -445,6 +445,7 @@
                         
                         const hasPartyHeader = tempHeaders.some(h => partyHeaderAliases[h]);
 
+                        // BUG FIX: Made date column detection more flexible
                         dateColumnIndex = tempHeaders.findIndex(h => h.toLowerCase().includes('date'));
                         pollsterColumnIndex = tempHeaders.findIndex(h => h.toLowerCase() === 'pollster'); 
                         
@@ -483,7 +484,6 @@
                         if (dateColumnIndex !== -1 && rawValues[dateColumnIndex] !== undefined) {
                             rawDateString = rawValues[dateColumnIndex].trim();
                             
-                            // Handle date ranges by taking the first date
                             const dateMatch = rawDateString.match(/(\d{1,2}\s[A-Za-z]+\s\d{4})/);
                             const dateToParse = dateMatch ? dateMatch[0] : rawDateString;
 
@@ -492,7 +492,10 @@
                                 pollDate = parsedDate;
                             }
                         } else if (requireDate) {
-                            continue;
+                             // BUG FIX: Don't skip the row if it's a result sheet without a date
+                            if (!sheetName.toLowerCase().includes('result')) {
+                                continue;
+                            }
                         }
                         poll.date = pollDate;
                         poll.rawDateString = rawDateString; 
@@ -1533,3 +1536,5 @@
     </script>
 </body>
 </html>
+
+
