@@ -67,11 +67,9 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        /* Custom class for hidden rows */
         .hidden-row {
             display: none;
         }
-        /* Ensure <b> tags are always bold */
         b {
             font-weight: bold;
         }
@@ -100,14 +98,14 @@
                 <h3 class="font-semibold mt-4 text-gray-700">How Votes are Converted to Seats:</h3>
                 <ul class="list-disc list-inside ml-4 text-xs space-y-1">
                     <li><b>Constituency Seats (73 seats):</b> These are allocated using a simplified <b>First-Past-the-Post (FPTP) proxy</b>. The party with the highest percentage of votes in a simulated constituency vote is assumed to win a proportional number of seats, with remaining seats distributed based on highest fractional remainders. This is a simplification, as actual FPTP is constituency-by- constituency.</li>
-                    <li><b>Regional List Seats (56 seats):</b> These are allocated using the <b>D'Hondt method</b>, a proportional representation system. The D'Hondt method aims to balance the overall seat distribution by giving "top-up" seats to parties that may have been underrepresented in the constituency vote. It works by iteratively dividing each party's regional vote total by a divisor (initially 1, then 2, 3, etc., incrementing each time a party wins a seat) and allocating seats to the party with the highest resulting quotient.</li>
+                    <li><b>Regional List Seats (56 seats):</b> These are allocated using the <b>D'Hondt method</b>, a proportional representation system. The D'Hondt method aims to balance the overall seat distribution by giving "top-up" seats to parties that may have been underrepresented in the constituency vote.</li>
                 </ul>
 
                 <h3 class="font-semibold mt-4 text-gray-700">Polling Trends & Jitter:</h3>
                 <ul class="list-disc list-inside ml-4 text-xs space-y-1">
                     <li><b>Rolling Average:</b> The simulation starts with a rolling average of the <b>last 5 polls</b> to establish a baseline for party support.</li>
-                    <li><b>Jitter:</b> A random "jitter" is added to each party's poll number in every simulation. This jitter is proportional to the party's average share, meaning larger parties will have smaller, more stable swings, while smaller parties can experience more volatile (but still realistic) fluctuations. This helps simulate the inherent uncertainty in polling.</li>
-                    <li><b>Historical Trends:</b> The simulation incorporates an <b>averaged historical trend</b> derived from the 1999, 2003, 2007, 2011, 2016, and 2021 Scottish Parliament elections. For each historical election, a <b>weighted average of all pre-election polls</b> is calculated (giving more weight to polls closer to the election date). The trend for that election is then the difference between the actual election result and this weighted average of pre-election polls. These individual election trends are then averaged, with <b>more recent election years receiving a higher weight</b>, to create the overall historical trend applied to current polling.</li>
+                    <li><b>Jitter (Senedd Methodology):</b> A random "jitter" is added to each party's poll number in every simulation. This jitter is a measure of the party's historical polling volatility, calculated as the <b>standard deviation</b> of the difference between a party's final pre-election polling average and its actual election result from past Holyrood elections. This gives a more accurate representation of each party's historical predictability.</li>
+                    <li><b>Historical Trends (Senedd Methodology):</b> The simulation incorporates an <b>averaged historical trend</b> derived from past Scottish Parliament elections. For each historical election, a <b>weighted average of all pre-election polls</b> is calculated (giving more weight to polls closer to the election date). The trend for that election is then the difference between the actual election result and this weighted average of pre-election polls. These individual election trends are then averaged, with <b>more recent election years receiving a higher weight</b>, to create the overall historical trend applied to current polling.</li>
                 </ul>
                 
                 <h3 class="font-semibold mt-4 text-gray-700">Important Notes:</h3>
@@ -190,7 +188,7 @@
             </div>
         </details>
         
-        <!-- Discounting Checkboxes - Grouped for consistency -->
+        <!-- Discounting Checkboxes -->
         <div class="flex flex-col md:flex-row justify-center gap-4 mt-4">
             <div class="flex items-center space-x-2 bg-gray-50 p-3 rounded-xl border border-gray-200">
                 <input type="checkbox" id="enable-trend-application" class="form-checkbox h-5 w-5 text-indigo-600 rounded-md border-gray-300" checked>
@@ -198,7 +196,7 @@
             </div>
         </div>
         
-        <!-- Run Simulation Button - Moved outside the details tag -->
+        <!-- Run Simulation Button -->
         <div class="flex justify-center mt-4">
             <button id="run-simulation-button" class="bg-gray-900 text-white font-bold py-3 px-6 rounded-full text-lg hover:bg-gray-800 transition-colors filter-button flex items-center justify-center gap-2">
                 <span id="button-text">Run Simulation</span>
@@ -206,7 +204,7 @@
             </button>
         </div>
 
-        <!-- Seats Required for a Majority - Moved here -->
+        <!-- Seats Required for a Majority -->
         <div class="mt-8 text-center bg-blue-50 p-6 rounded-xl border border-blue-200 shadow-sm">
             <h3 class="text-lg font-semibold text-blue-700 flex items-center justify-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide-icon text-blue-500"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -334,22 +332,14 @@
     </div>
 
     <script>
-        // Wrap the entire script in an IIFE to encapsulate variables and avoid global scope issues
         (function() {
-            // Fixed reference date for historical trend discounting (August 10, 2025, 00:00:00 UTC)
-            // This is now only used for the label text, not for calculation.
-            const startDateForDiscounting = new Date('2025-08-10T00:00:00Z');
             const millisecondsPerDay = 1000 * 60 * 60 * 24;
 
-            // Global variable to store the averaged historical trend
             let averagedHistoricalTrend = { constituency: {}, regional: {} };
-            // Global variable to store the actual current polls being used (full objects with dates)
             let currentPollsInUse = [];
-            // Global variable to store the new, statistically calculated jitters
             let calculatedJitterFactors = {};
             
             document.addEventListener('DOMContentLoaded', async () => {
-                // Updated party names and colors/jitter factors based on your specified headings
                 const parties = [
                     { name: 'SNP', color: '#FDF38E', jitterFactor: 0 },
                     { name: 'Labour', color: '#E4003B', jitterFactor: 0 },
@@ -361,7 +351,6 @@
                     { name: 'Others', color: '#CCCCCC', jitterFactor: 0 }
                 ];
 
-                // Define aliases for party names to handle variations in sheet headers
                 const partyHeaderAliases = {
                     'SNP': 'SNP',
                     'Lab': 'Labour',
@@ -384,14 +373,11 @@
                 };
 
                 // --- Constants and DOM Elements ---
-                // The URL of your deployed Google Apps Script Web App acting as a CORS proxy.
                 const appsScriptProxyUrl = "https://script.google.com/macros/s/AKfycbyermTNMtQ--T-Rpg0ylE4ooPvLj3IwtixyqBooJU-eXK7xFtLWNXIG80Y1mYOMJSYnhw/exec";
                 
-                // Current Polls GIDs (These are the GIDs for your *cleaned* sheets)
                 const constituencyGid = '1550759519'; 
                 const regionalGid = '182062955';   
 
-                // --- CHANGE: Adjusted year weights for a slightly less aggressive but still pronounced effect ---
                 const historicalElectionGids = [
                     { year: 2021, constituencyGid: '819802892', regionalGid: '1188969757', electionDate: new Date('2021-05-06T00:00:00Z'), yearWeight: 1.0, resultGid: '1692290060' },
                     { year: 2016, constituencyGid: '718925928', regionalGid: '89652159', electionDate: new Date('2016-05-05T00:00:00Z'), yearWeight: 0.75, resultGid: '1138865612' },
@@ -400,7 +386,6 @@
                     { year: 2003, constituencyGid: '1481565062', regionalGid: '1549024075', electionDate: new Date('2003-05-01T00:00:00Z'), yearWeight: 0.1, resultGid: '1696236636' }
                 ];
                 
-
                 const totalConstituencySeats = 73;
                 const totalRegionalSeats = 56;
                 const totalParliamentSeats = 129;
@@ -415,7 +400,6 @@
                 const probabilityTableBody = document.getElementById('probability-table');
                 const coalitionTableBody = document.getElementById('coalition-table');
                 const forecastedSeatsTableBody = document.getElementById('forecasted-seats-table');
-                const majoritySeatsEl = document.querySelector('.mt-8 p');
                 const toggleRedButton = document.getElementById('toggle-red-button');
                 const toggleAmberButton = document.getElementById('toggle-amber-button');
                 const buttonTextSpan = document.getElementById('button-text');
@@ -425,18 +409,14 @@
                 const regionalSumSpan = document.querySelector('.regional-total-value');
                 const keyTakeawaysList = document.getElementById('key-takeaways-list');
                 const enableTrendApplicationCheckbox = document.getElementById('enable-trend-application'); 
-
-                // New DOM elements for current polls dropdown
                 const currentPollsTableBody = document.getElementById('current-polls-table-body'); 
                 const partyHeadersRow = document.getElementById('party-headers-row'); 
                 const currentPollsMessageDiv = document.getElementById('current-polls-message'); 
                 const coalitionMessageDiv = document.getElementById('coalition-message'); 
 
-                let coalitionData = []; 
                 let hiddenRed = true; 
                 let hiddenAmber = false;
 
-                // Global storage for last simulation results to be used by takeaways
                 let lastSimResults = {
                     majorityProbabilities: {},
                     pluralityProbabilities: {},
@@ -446,13 +426,9 @@
 
                 // --- Data Fetching and Parsing Functions ---
                 const parseGoogleSheetData = (csvText, requireDate = false, sheetName = "Unknown Sheet") => { 
-                    console.log(`--- Parsing CSV for ${sheetName} ---`);
-                    console.log("Raw CSV Text:", csvText.substring(0, 200) + (csvText.length > 200 ? '...' : '')); 
-
                     const polls = [];
                     const lines = csvText.split('\n');
                     if (lines.length <= 1) {
-                        console.warn(`[${sheetName}] CSV has too few lines (<= 1). Returning empty array.`);
                         return [];
                     }
 
@@ -478,16 +454,11 @@
                         if (recognizedPartyCount && (!requireDate || (dateColumnIndex !== -1 || pollsterColumnIndex !== -1 || sheetName.includes('Result')))) {
                             headerRowIndex = i;
                             rawHeaders = tempHeaders;
-                            console.log(`[${sheetName}] Detected header row at index ${i}:`, rawHeaders);
-                            if (requireDate && (dateColumnIndex === -1 && !sheetName.includes('Result'))) {
-                                console.warn(`[${sheetName}] WARNING: Date column required but not found in detected header for historical data.`);
-                            }
                             break;
                         }
                     }
 
                     if (headerRowIndex === -1) {
-                        console.warn(`[${sheetName}] Could not find a valid header row with recognized party names. Returning empty array.`);
                         return [];
                     }
 
@@ -498,17 +469,14 @@
                             headerMap[canonicalName] = i;
                         }
                     });
-                    console.log(`[${sheetName}] Normalized Header Map:`, headerMap);
 
                     for (let i = headerRowIndex + 1; i < lines.length; i++) {
                         const line = lines[i].trim();
                         if (!line) {
-                            console.log(`[${sheetName}] Skipping empty line ${i+1}.`);
                             continue;
                         }
 
                         const rawValues = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.trim().replace(/^"|"$/g, ''));
-                        console.log(`[${sheetName}] Parsing row ${i+1} - Raw values:`, rawValues);
                         
                         const poll = { parties: {} };
                         let pollDate = null;
@@ -521,12 +489,8 @@
                             const parsedDate = new Date(rawDateString);
                             if (!isNaN(parsedDate.getTime())) {
                                 pollDate = parsedDate;
-                            } else {
-                                
-                                console.warn(`[${sheetName}] Invalid date format in row ${i+1}: '${rawDateString}'. Date object will be null.`);
                             }
                         } else if (requireDate) {
-                            console.warn(`[${sheetName}] Date column missing or empty in row ${i+1} and date is required. Skipping this poll.`);
                             continue;
                         }
                         poll.date = pollDate;
@@ -535,7 +499,6 @@
                         if (pollsterColumnIndex !== -1 && rawValues[pollsterColumnIndex] !== undefined) {
                             pollsterName = rawValues[pollsterColumnIndex].trim();
                         } else if (requireDate) { 
-                            console.warn(`[${sheetName}] Pollster column missing or empty in row ${i+1} and pollster is required. Skipping this poll.`);
                             continue;
                         }
                         poll.pollster = pollsterName; 
@@ -553,10 +516,6 @@
                                     if (value !== 0) {
                                         hasAnyValidPartyDataInRow = true;
                                     }
-                                } else {
-                                    if (cleanedValue !== '') {
-                                        console.warn(`[${sheetName}] Party '${p.name}' data in row ${i+1} ('${rawValues[colIndex]}') is invalid (NaN after cleaning). Setting to 0.`);
-                                    }
                                 }
                             }
                             poll.parties[p.name] = value;
@@ -564,9 +523,6 @@
 
                         if (hasAnyValidPartyDataInRow) {
                             polls.push(poll);
-                            console.log(`[${sheetName}] Successfully parsed poll from row ${i+1}:`, poll);
-                        } else {
-                            console.log(`[${sheetName}] Skipping row ${i+1}: No valid, non-zero party data found.`);
                         }
                     }
                     
@@ -574,8 +530,6 @@
                         polls.sort((a, b) => (a.date ? a.date.getTime() : 0) - (b.date ? b.date.getTime() : 0));
                     }
                     
-                    console.log(`--- Finished parsing CSV for ${sheetName} ---`);
-                    console.log(`[${sheetName}] Final Parsed Polls:`, polls);
                     return polls;
                 };
                 
@@ -599,11 +553,9 @@
 
                 const fetchPollsFromGoogleSheet = async () => {
                     try {
-                        console.log("Attempting to fetch current polls...");
                         const constituencyUrl = `${appsScriptProxyUrl}?gid=${constituencyGid}`;
                         const constituencyResponse = await fetch(constituencyUrl);
                         if (!constituencyResponse.ok) {
-                            console.error(`HTTP error fetching constituency data! status: ${constituencyResponse.status}`);
                             throw new Error(`HTTP error! status: ${constituencyResponse.status}`);
                         }
                         const constituencyCsvText = await constituencyResponse.text();
@@ -612,13 +564,10 @@
                         const regionalUrl = `${appsScriptProxyUrl}?gid=${regionalGid}`;
                         const regionalResponse = await fetch(regionalUrl);
                         if (!regionalResponse.ok) {
-                            console.error(`HTTP error fetching regional data! status: ${regionalResponse.status}`);
                             throw new Error(`HTTP error! status: ${regionalResponse.status}`);
                         }
                         const regionalCsvText = await regionalResponse.text();
                         const regionalPollsFull = parseGoogleSheetData(regionalCsvText, false, "Current Regional");
-
-                        console.log(`Current Polls: Constituency polls (full objects) length: ${constituencyPollsFull.length}, Regional polls (full objects) length: ${regionalPollsFull.length}`);
                         
                         const combinedPollsFull = [];
                         const numPollsToConsider = Math.min(constituencyPollsFull.length, regionalPollsFull.length);
@@ -634,10 +583,9 @@
                         }
                         
                         const finalCurrentPolls = combinedPollsFull.slice(0, 5); 
-                        console.log(`Combined and sliced current polls (latest 5, based on sheet order: first 5):`, finalCurrentPolls);
                         return finalCurrentPolls; 
                     } catch (error) {
-                        console.error("Could not fetch current poll data from Google Sheet. Ensure the sheets are published to web as CSV and you are running the HTML file from a web server (e.g., `http://localhost`).", error);
+                        console.error("Could not fetch current poll data from Google Sheet.", error);
                         return null;
                     }
                 };
@@ -650,7 +598,6 @@
 
                     for (const poll of polls) {
                         if (!poll.date) {
-                            console.warn(`Skipping poll due to missing date for weighted average calculation.`);
                             continue;
                         }
                         const daysBeforeElection = Math.max(0, Math.floor((electionDate.getTime() - poll.date.getTime()) / millisecondsPerDay));
@@ -678,10 +625,11 @@
                 };
 
                 const calculateJitterFactors = async () => {
-                    console.log("Calculating new jitter factors from historical data...");
-                    const partyPollingErrors = {};
+                    console.log("Calculating new jitter factors from historical data (Senedd Methodology)...");
+                    const partyPollingErrors = { constituency: {}, regional: {} };
                     parties.forEach(p => {
-                        partyPollingErrors[p.name] = { constituency: [], regional: [] };
+                        partyPollingErrors.constituency[p.name] = [];
+                        partyPollingErrors.regional[p.name] = [];
                     });
 
                     for (const election of historicalElectionGids) {
@@ -712,25 +660,22 @@
                             const weightedAvgConstPoll = calculateWeightedAverageForPolls(prePollsConst, election.electionDate);
                             const weightedAvgRegPoll = calculateWeightedAverageForPolls(prePollsReg, election.electionDate);
 
-                            // --- BUG FIX START ---
                             const electionResultData = parseGoogleSheetData(await resultResponse.text(), false, `Historical Results ${election.year}`);
-                            if (electionResultData.length < 2) { // Expect at least 2 rows: one for constituency, one for regional.
-                                console.warn(`Actual election results for ${election.year} do not contain enough data (expected 2 rows, got ${electionResultData.length}). Skipping jitter calculation for this year.`);
+                            if (electionResultData.length < 2) {
+                                console.warn(`Actual election results for ${election.year} do not contain enough data. Skipping jitter calculation.`);
                                 continue;
                             }
-                            // Assuming the first data row is constituency results and the second is regional.
                             const actualResultConst = normalizeVotes(electionResultData[0].parties);
                             const actualResultReg = normalizeVotes(electionResultData[1].parties);
-                            // --- BUG FIX END ---
 
                             parties.forEach(p => {
                                 if (actualResultConst[p.name] !== undefined && weightedAvgConstPoll[p.name] !== undefined) {
-                                    const errorConst = Math.abs(actualResultConst[p.name] - weightedAvgConstPoll[p.name]);
-                                    partyPollingErrors[p.name].constituency.push(errorConst);
+                                    const errorConst = actualResultConst[p.name] - weightedAvgConstPoll[p.name];
+                                    partyPollingErrors.constituency[p.name].push(errorConst);
                                 }
                                 if (actualResultReg[p.name] !== undefined && weightedAvgRegPoll[p.name] !== undefined) {
-                                    const errorReg = Math.abs(actualResultReg[p.name] - weightedAvgRegPoll[p.name]);
-                                    partyPollingErrors[p.name].regional.push(errorReg);
+                                    const errorReg = actualResultReg[p.name] - weightedAvgRegPoll[p.name];
+                                    partyPollingErrors.regional[p.name].push(errorReg);
                                 }
                             });
 
@@ -739,25 +684,21 @@
                         }
                     }
 
+                    const calculateStdDev = (arr) => {
+                        if (arr.length < 2) return 0;
+                        const n = arr.length;
+                        const mean = arr.reduce((a, b) => a + b) / n;
+                        return Math.sqrt(arr.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / n);
+                    };
+
                     const newJitters = {};
                     parties.forEach(p => {
-                        const avgErrorConst = partyPollingErrors[p.name].constituency.length > 0 ?
-                            partyPollingErrors[p.name].constituency.reduce((sum, val) => sum + val, 0) / partyPollingErrors[p.name].constituency.length : 0;
-                        const avgErrorReg = partyPollingErrors[p.name].regional.length > 0 ?
-                            partyPollingErrors[p.name].regional.reduce((sum, val) => sum + val, 0) / partyPollingErrors[p.name].regional.length : 0;
-                        
-                        newJitters[p.name] = (avgErrorConst + avgErrorReg) / 2;
-                        if (newJitters[p.name] < 0.5) {
-                            newJitters[p.name] = 0.5;
-                        }
-                        if (p.name === 'Alba' || p.name === 'Reform' || p.name === 'Green') {
-                             if (newJitters[p.name] < 2.0) {
-                                 newJitters[p.name] = 2.0;
-                             }
-                        }
+                        const stdDevConst = calculateStdDev(partyPollingErrors.constituency[p.name]);
+                        const stdDevReg = calculateStdDev(partyPollingErrors.regional[p.name]);
+                        newJitters[p.name] = (stdDevConst + stdDevReg) / 2;
                     });
 
-                    console.log("Calculated Jitter Factors:", newJitters);
+                    console.log("Calculated Jitter Factors (Standard Deviation):", newJitters);
                     return newJitters;
                 };
 
@@ -769,7 +710,6 @@
                     let allRegionalTrendsSum = {};
                     let totalYearWeightForConst = 0; 
                     let totalYearWeightForReg = 0; 
-
 
                     parties.forEach(p => {
                         allConstituencyTrendsSum[p.name] = 0;
@@ -795,7 +735,6 @@
                             let allConstPollsForElection = parseGoogleSheetData(constCsvText, true, `Historical ${election.year} Constituency`); 
                             let allRegPollsForElection = parseGoogleSheetData(regCsvText, true, `Historical ${election.year} Regional`);
                             
-                            // --- BUG FIX START ---
                             const electionResultData = parseGoogleSheetData(await resultResponse.text(), false, `Historical Results ${election.year}`);
                             
                             if (allConstPollsForElection.length === 0 || allRegPollsForElection.length === 0 || electionResultData.length < 2) {
@@ -803,10 +742,8 @@
                                 continue;
                             }
 
-                            // Assuming the first data row is constituency results and the second is regional.
                             const actualConstResult = normalizeVotes(electionResultData[0].parties);
                             const actualRegResult = normalizeVotes(electionResultData[1].parties);
-                            // --- BUG FIX END ---
 
                             let pollsForWeightedAvgConst = allConstPollsForElection.filter(p => p.date && p.date.getTime() < election.electionDate.getTime());
                             let pollsForWeightedAvgReg = allRegPollsForElection.filter(p => p.date && p.date.getTime() < election.electionDate.getTime());
@@ -841,13 +778,14 @@
                             finalAveragedTrend.constituency[p.name] = totalYearWeightForConst > 0 ? (allConstituencyTrendsSum[p.name] / totalYearWeightForConst) : 0;
                             finalAveragedTrend.regional[p.name] = totalYearWeightForReg > 0 ? (allRegionalTrendsSum[p.name] / totalYearWeightForReg) : 0;
                         });
-                        console.log("Averaged Historical Trends (Weighted by Year):", finalAveragedTrend);
+
+                        console.log("Averaged Historical Trends (Senedd Methodology):", finalAveragedTrend);
                     } else {
                         parties.forEach(p => {
                             finalAveragedTrend.constituency[p.name] = 0;
                             finalAveragedTrend.regional[p.name] = 0;
                         });
-                        console.warn("Historical trend application is disabled or no meaningful historical trends could be loaded. Simulation will run without historical swings (trends set to 0).");
+                        console.warn("Historical trend application is disabled or no meaningful historical trends could be loaded.");
                     }
                     return finalAveragedTrend;
                 };
@@ -857,7 +795,7 @@
                     buttonTextSpan.textContent = "Simulating...";
                     loadingSpinner.classList.remove('hidden');
                     runSimulationButton.disabled = true;
-                    pollMessageContainer.textContent = "Fetching data from Google Sheet...";
+                    pollMessageContainer.textContent = "Fetching data...";
                     pollMessageContainer.className = "text-center text-sm font-semibold h-5 mb-2 text-gray-600";
 
                     window.requestAnimationFrame(async () => {
@@ -1059,6 +997,7 @@
                 };
 
                 const getRagRating = (coalitionParties) => {
+                    // This logic remains specific to Holyrood politics
                     const hasSnp = coalitionParties.includes('SNP');
                     const hasLabour = coalitionParties.includes('Labour');
                     const hasConservative = coalitionParties.includes('Conservative');
@@ -1070,41 +1009,24 @@
                     if (coalitionParties.length === 2 && hasReform && hasConservative) {
                         return 'green';
                     }
-
                     if (hasLabour && hasConservative) {
                         return 'red';
                     }
-
                     if (hasSnp && hasLabour) {
                         return 'red';
                     }
-
                     if (hasAlba) {
-                        if (hasSnp && coalitionParties.length === 2 && coalitionParties.includes('Alba')) {
-                            return 'amber';
-                        } else {
-                            return 'red';
-                        }
+                        return (hasSnp && coalitionParties.length === 2) ? 'amber' : 'red';
                     }
-
                     if (hasReform) {
                         return 'red';
                     }
-
-                    if (
-                        (hasSnp && hasConservative) ||
-                        (hasGreen && hasConservative)
-                    ) {
+                    if ((hasSnp && hasConservative) || (hasGreen && hasConservative)) {
                         return 'red';
                     }
-
-                    if (
-                        (hasConservative && hasLiberalDemocrat) ||
-                        (hasLabour && hasGreen && hasConservative)
-                    ) {
+                    if ((hasConservative && hasLiberalDemocrat) || (hasLabour && hasGreen && hasConservative)) {
                         return 'amber';
                     }
-
                     return 'green';
                 };
 
@@ -1112,14 +1034,8 @@
                 const runMonteCarloSimulation = () => { 
                     console.log("runMonteCarloSimulation started.");
                     try {
-                        const majorityCounter = {};
-                        const pluralityCounter = {};
-                        const seatTotaler = {};
-                        const coalitionMajorityCounts = {}; 
-                        const coalitionNearMajorityCounts = {}; 
-                        const coalitionSeatTotals = {}; 
-                        const coalitionMaxSeats = {}; 
-
+                        const majorityCounter = {}, pluralityCounter = {}, seatTotaler = {};
+                        const coalitionMajorityCounts = {}, coalitionNearMajorityCounts = {}, coalitionSeatTotals = {}, coalitionMaxSeats = {};
                         const baseCoalitionSeniorityTracker = {}; 
 
                         parties.forEach(p => {
@@ -1128,9 +1044,8 @@
                             seatTotaler[p.name] = { constituency: 0, regional: 0, total: 0 };
                         });
 
-                        const coalitionParties = mainParties;
-                        const twoPartyCombos = getCombinations(coalitionParties, 2);
-                        const threePartyCombos = getCombinations(coalitionParties, 3);
+                        const twoPartyCombos = getCombinations(mainParties, 2);
+                        const threePartyCombos = getCombinations(mainParties, 3);
                         
                         const allCombos = [...twoPartyCombos, ...threePartyCombos];
                         allCombos.forEach(combo => {
@@ -1175,7 +1090,6 @@
 
                         const trendToApply = averagedHistoricalTrend;
                         
-                        console.log("Starting Monte Carlo loops...");
                         for (let i = 0; i < numSimulations; i++) {
                             const simulatedConstituency = {};
                             const simulatedRegional = {};
@@ -1209,8 +1123,6 @@
                                 pluralityCounter[simulatedResults[0].name]++;
                             }
 
-                            const partiesForCoalition = mainParties; 
-
                             allCombos.forEach(combo => {
                                 const baseCoalitionKey = [...combo].sort().join(' + '); 
 
@@ -1236,14 +1148,9 @@
                                 }
                             });
                         }
-                        console.log("Monte Carlo loops finished.");
                         
-                        const majorityProbabilities = {};
-                        const pluralityProbabilities = {};
-                        const averageSeats = {};
-                        const coalitionMajorityProbs = {};
-                        const coalitionNearMajorityProbs = {};
-                        const averageCoalitionSeats = {};
+                        const majorityProbabilities = {}, pluralityProbabilities = {}, averageSeats = {};
+                        const coalitionMajorityProbs = {}, coalitionNearMajorityProbs = {}, averageCoalitionSeats = {};
 
                         parties.forEach(p => {
                             majorityProbabilities[p.name] = (majorityCounter[p.name] / numSimulations * 100).toFixed(2);
@@ -1251,7 +1158,7 @@
                             averageSeats[p.name] = {
                                 constituency: (seatTotaler[p.name].constituency / numSimulations), 
                                 regional: (seatTotaler[p.name].regional / numSimulations),  
-                                total: (seatTotaler[p.name].total / numSimulations)            };
+                                total: (seatTotaler[p.name].total / numSimulations)       };
                         });
                         
                         Object.keys(coalitionSeatTotals).forEach(key => { 
@@ -1260,22 +1167,17 @@
                             averageCoalitionSeats[key] = (coalitionSeatTotals[key] / numSimulations); 
                         });
 
-                        lastSimResults.majorityProbabilities = majorityProbabilities;
-                        lastSimResults.pluralityProbabilities = pluralityProbabilities;
-                        lastSimResults.averageSeats = averageSeats;
+                        lastSimResults = { majorityProbabilities, pluralityProbabilities, averageSeats };
                         
                         const rawCoalitionsForDisplay = Object.keys(averageCoalitionSeats).map(key => { 
-                            const partiesInKey = key.split(' + ');
-                            const currentMaxSeats = coalitionMaxSeats[key] || 0; 
-                            
                             return {
                                 name: key, 
-                                parties: partiesInKey,
+                                parties: key.split(' + '),
                                 baseCoalitionKey: key, 
                                 majority: parseFloat(coalitionMajorityProbs[key] || 0), 
                                 nearMajority: parseFloat(coalitionNearMajorityProbs[key] || 0), 
                                 averageSeats: parseFloat(averageCoalitionSeats[key] || 0), 
-                                maxSeats: currentMaxSeats
+                                maxSeats: coalitionMaxSeats[key] || 0
                             };
                         });
 
@@ -1302,55 +1204,36 @@
                                 const seatsB = averageSeats[b]?.total || 0;
                                 return seatsB - seatsA;
                             });
-                            const displayName = sortedPartiesForDisplayName.join(' + ');
-
-                            return {
-                                ...c,
-                                displayName: displayName 
-                            };
+                            return { ...c, displayName: sortedPartiesForDisplayName.join(' + ') };
                         }).sort((a, b) => {
-                            if (b.majority !== a.majority) {
-                                return b.majority - a.majority;
-                            }
-                            if (b.nearMajority !== a.nearMajority) {
-                                return b.nearMajority - a.nearMajority;
-                            }
+                            if (b.majority !== a.majority) return b.majority - a.majority;
+                            if (b.nearMajority !== a.nearMajority) return b.nearMajority - a.nearMajority;
                             return b.averageSeats - a.averageSeats;
                         });
 
-                        console.log("Rendering results...");
                         renderProbabilities(majorityProbabilities, pluralityProbabilities);
                         renderCoalitionProbabilities(coalitionMajorityProbs, coalitionNearMajorityProbs, averageCoalitionSeats, coalitionMaxSeats, averageSeats, baseCoalitionSeniorityTracker);
                         renderForecastedSeats(averageSeats);
                         renderKeyTakeaways(); 
 
                     } catch (error) {
-                        console.error("Error during Monte Carlo simulation run (synchronous part):", error);
+                        console.error("Error during Monte Carlo simulation run:", error);
                         showTempMessage("An error occurred during simulation. Check console for details.", "text-red-500");
-                        probabilityTableBody.innerHTML = `<tr class="text-center text-gray-500 italic"><td colspan="3" class="px-6 py-4">Error during simulation.</td></tr>`;
-                        coalitionTableBody.innerHTML = `<tr class="text-center text-gray-500 italic"><td colspan="5" class="px-6 py-4">Error during simulation.</td></tr>`;
-                        forecastedSeatsTableBody.innerHTML = `<tr class="text-center text-gray-500 italic"><td colspan="4" class="px-6 py-4">Error during simulation.</td></tr>`;
-                        keyTakeawaysList.innerHTML = '<li class="text-gray-500">Simulation could not be run due to an unexpected error. Please check the console.</li>';
                     }
                 };
 
                 // --- UI Rendering Functions ---
-
                 const renderInputs = () => {
                     newConstituencyInputsDiv.innerHTML = '';
                     newRegionalInputsDiv.innerHTML = '';
 
                     parties.forEach(p => {
-                        const constituencyRow = createInputHtml(p, 'constituency');
-                        const regionalRow = createInputHtml(p, 'regional');
-                        newConstituencyInputsDiv.innerHTML += constituencyRow;
-                        newRegionalInputsDiv.innerHTML += regionalRow;
+                        newConstituencyInputsDiv.innerHTML += createInputHtml(p, 'constituency');
+                        newRegionalInputsDiv.innerHTML += createInputHtml(p, 'regional');
                     });
 
                     document.querySelectorAll('input[type="number"]').forEach(input => {
-                        input.addEventListener('input', () => {
-                            parseNewPollFromInputs(); 
-                        });
+                        input.addEventListener('input', parseNewPollFromInputs);
                     });
                 };
                 
@@ -1396,7 +1279,7 @@
                     }
 
                     sortedParties.forEach(p => {
-                        const row = `
+                        probabilityTableBody.innerHTML += `
                             <tr class="hover:bg-gray-50 transition-colors">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
@@ -1412,13 +1295,11 @@
                                 </td>
                             </tr>
                         `;
-                        probabilityTableBody.innerHTML += row;
                     });
                 };
                 
-                const renderCoalitionProbabilities = (coalitionMajorityProbs, coalitionNearMajorityProbs, averageCoalitionSeats, coalitionMaxSeats, individualAvgSeats, baseCoalitionSeniorityTracker) => {
+                const renderCoalitionProbabilities = () => {
                     coalitionMessageDiv.textContent = ''; 
-
                     const coalitionsToRender = lastSimResults.coalitionsToRender;
                     
                     if (!coalitionsToRender || coalitionsToRender.length === 0) {
@@ -1433,20 +1314,17 @@
                         const ragRating = getRagRating(coalition.parties);
                         const hiddenClass = ((hiddenRed && ragRating === 'red') || (hiddenAmber && ragRating === 'amber')) ? 'hidden-row' : '';
                         
-                        let seniorityHtml = '';
-                        const seniorityInfo = baseCoalitionSeniorityTracker[coalition.baseCoalitionKey];
+                        let seniorityHtml = '<span class="text-gray-400 text-xs">N/A</span>';
+                        const seniorityInfo = lastSimResults.baseCoalitionSeniorityTracker ? lastSimResults.baseCoalitionSeniorityTracker[coalition.baseCoalitionKey] : null;
                         if (seniorityInfo && seniorityInfo.totalOccurrences > 0) {
                             const sortedSeniorityParties = Object.keys(seniorityInfo).filter(pName => pName !== 'totalOccurrences').sort((a, b) => seniorityInfo[b] - seniorityInfo[a]);
                             seniorityHtml = sortedSeniorityParties.map(pName => {
                                 const prob = ((seniorityInfo[pName] / seniorityInfo.totalOccurrences) * 100).toFixed(1);
                                 return `<div class="flex items-center justify-between text-xs text-gray-600"><span>${pName}:</span> <span>${prob}%</span></div>`;
                             }).join('');
-                        } else {
-                            seniorityHtml = '<span class="text-gray-400 text-xs">N/A</span>';
                         }
 
-
-                        const row = `
+                        coalitionTableBody.innerHTML += `
                             <tr class="hover:bg-gray-50 transition-colors ${hiddenClass}" data-rag-rating="${ragRating}">
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                     ${coalition.displayName} <span class="text-gray-500 font-normal">(${coalition.averageSeats.toFixed(2)} / ${coalition.maxSeats})</span>
@@ -1465,14 +1343,13 @@
                                 </td>
                             </tr>
                         `;
-                        coalitionTableBody.innerHTML += row;
                     });
                     updateCoalitionMessage(); 
                 };
                 
                 const renderForecastedSeats = (averageSeats) => {
                     if (!averageSeats || Object.keys(averageSeats).length === 0) {
-                        forecastedSeatsTableBody.innerHTML = `<tr class="text-center text-gray-500 italic"><td colspan="4" class="px-6 py-4">No data available for simulation.</td></tr>`;
+                        forecastedSeatsTableBody.innerHTML = `<tr class="text-center text-gray-500 italic"><td colspan="4" class="px-6 py-4">No data available.</td></tr>`;
                         return;
                     }
 
@@ -1480,19 +1357,10 @@
                     const sortedParties = parties.map(p => ({
                         ...p,
                         seats: averageSeats[p.name] 
-                    })).sort((a, b) => parseFloat(b.seats.total) - parseFloat(a.seats.total)); 
-
-                    if (sortedParties.length === 0) {
-                        forecastedSeatsTableBody.innerHTML = `
-                            <tr class="text-center text-gray-500 italic">
-                                <td colspan="4" class="px-6 py-4">No seats could be allocated based on the simulation.</td>
-                            </tr>
-                        `;
-                        return;
-                    }
+                    })).sort((a, b) => (b.seats?.total || 0) - (a.seats?.total || 0)); 
 
                     sortedParties.forEach(p => {
-                        const row = `
+                        forecastedSeatsTableBody.innerHTML += `
                             <tr class="hover:bg-gray-50 transition-colors">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
@@ -1501,17 +1369,16 @@
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
-                                    ${p.seats.constituency.toFixed(1)}
+                                    ${(p.seats?.constituency || 0).toFixed(1)}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
-                                    ${p.seats.regional.toFixed(1)}
+                                    ${(p.seats?.regional || 0).toFixed(1)}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-bold text-gray-900">
-                                    ${p.seats.total.toFixed(1)}
+                                    ${(p.seats?.total || 0).toFixed(1)}
                                 </td>
                             </tr>
                         `;
-                        forecastedSeatsTableBody.innerHTML += row;
                     });
                 };
 
@@ -1528,36 +1395,16 @@
                     }
 
                     const colorName = rating.charAt(0).toUpperCase() + rating.slice(1);
-                    if (isHidden) {
-                        button.textContent = `Show ${colorName} rated coalitions`;
-                        button.classList.remove(`bg-${rating}-500`);
-                        button.classList.add(`bg-gray-500`); 
-                    } else {
-                        button.textContent = `Hide ${colorName} rated coalitions`;
-                        button.classList.add(`bg-${rating}-500`);
-                        button.classList.remove('bg-gray-500');
-                    }
+                    button.textContent = isHidden ? `Show ${colorName} rated coalitions` : `Hide ${colorName} rated coalitions`;
+                    button.classList.toggle(`bg-${rating}-500`, !isHidden);
+                    button.classList.toggle('bg-gray-500', isHidden);
                     
                     document.querySelectorAll(`#coalition-table tr[data-rag-rating="${rating}"]`).forEach(row => {
-                        if (isHidden) {
-                            row.classList.add('hidden-row');
-                        } else {
-                            row.classList.remove('hidden-row');
-                        }
+                        row.classList.toggle('hidden-row', isHidden);
                     });
                     updateCoalitionMessage(); 
                 };
                 
-                const sortCoalitionParties = (partyNames, averageSeats) => {
-                    const partySeats = partyNames.map(name => ({
-                        name,
-                        seats: (averageSeats[name]?.total || 0) 
-                    }));
-                    
-                    partySeats.sort((a, b) => b.seats - a.seats); 
-                    return partySeats.map(p => p.name).join(' + '); 
-                };
-
                 const showTempMessage = (message, className) => {
                     pollMessageContainer.textContent = message;
                     pollMessageContainer.className = `text-center text-sm font-semibold h-5 mb-2 ${className}`; 
@@ -1569,32 +1416,26 @@
 
                 const renderKeyTakeaways = () => {
                     if (!lastSimResults.averageSeats || Object.keys(lastSimResults.averageSeats).length === 0) {
-                        keyTakeawaysList.innerHTML = `<li class="text-gray-500">Simulation could not be run due to a data fetching error.</li>`;
+                        keyTakeawaysList.innerHTML = `<li class="text-gray-500">Simulation could not be run.</li>`;
                         return;
                     }
 
                     keyTakeawaysList.innerHTML = ''; 
 
                     const takeaways = [];
-
                     const sortedPlurality = parties.map(p => ({
                         name: p.name,
                         plurality: parseFloat(lastSimResults.pluralityProbabilities[p.name]),
                         majority: parseFloat(lastSimResults.majorityProbabilities[p.name])
-                    }))
-                    .sort((a, b) => b.plurality - a.plurality);
+                    })).sort((a, b) => b.plurality - a.plurality);
 
                     if (sortedPlurality.length > 0 && sortedPlurality[0].plurality > 0) {
                         const topParty = sortedPlurality[0];
-                        let outcomeText = `The simulation suggests that <b>${topParty.name}</b> is most likely to emerge as the largest party in the Scottish Parliament, <b>achieving a plurality in ${topParty.plurality}% of the simulated elections</b>.`;
+                        let outcomeText = `The simulation suggests that <b>${topParty.name}</b> is most likely to emerge as the largest party, <b>achieving a plurality in ${topParty.plurality}% of simulations</b>.`;
                         if (topParty.majority > 0) {
-                            outcomeText += ` They <b>achieve a majority in ${topParty.majority}% of the simulated elections</b> (${majoritySeats} seats).`;
-                        } else if (topParty.plurality > 50 && sortedPlurality.length > 1 && (topParty.plurality - sortedPlurality[1].plurality) > 10) {
-                            outcomeText += ` While an outright majority is unlikely, they are strongly positioned to lead a government.`;
+                            outcomeText += ` They <b>achieve a majority in ${topParty.majority}% of simulations</b>.`;
                         }
                         takeaways.push(outcomeText);
-                    } else {
-                        takeaways.push("No single party showed a clear path to winning a majority or plurality based on the simulation.");
                     }
 
                     const greenCoalitions = lastSimResults.coalitionsToRender.filter(c => getRagRating(c.parties) === 'green');
@@ -1602,58 +1443,34 @@
 
                     if (greenCoalitions.length > 0) {
                         const topGreen = greenCoalitions[0];
-                        let coalitionText = `Forming a stable Scottish Government appears viable through coalition. The most politically viable option is a <b>${topGreen.displayName}</b> coalition, `;
+                        let coalitionText = `The most politically viable government option appears to be a <b>${topGreen.displayName}</b> coalition, `;
                         if (topGreen.majority > 0) {
-                            coalitionText += `which <b>achieves a majority in ${topGreen.majority}% of the simulated elections</b>.`;
+                            coalitionText += `which <b>achieves a majority in ${topGreen.majority}% of simulations</b>.`;
                         } else {
-                            coalitionText += `which <b>does not achieve a majority in our simulations</b>. However, it does reach a near-majority in which a minority government is feasible in <b>${topGreen.nearMajority}%</b> of the simulated elections.`;
+                            coalitionText += `which achieves a near-majority in <b>${topGreen.nearMajority}%</b> of simulations. Near-majorities may become effective majorities with the election of a Presiding Officer, who gives up their party vote.`;
                         }
                         takeaways.push(coalitionText);
                     } else if (amberCoalitions.length > 0) {
                         const topAmber = amberCoalitions[0];
                         let coalitionText = `Forming a majority Scottish Government may be challenging. The most likely coalition, though with some political hurdles, is a <b>${topAmber.displayName}</b> alliance, `;
                         if (topAmber.majority > 0) {
-                            coalitionText += `which <b>achieves a majority in ${topAmber.majority}% of the simulated elections</b>.`;
+                            coalitionText += `which <b>achieves a majority in ${topAmber.majority}% of simulations</b>.`;
                         } else {
-                            coalitionText += `which <b>does not achieve a majority in our simulations</b>. However, it does reach a near-majority in which a minority government is feasible in <b>${topAmber.nearMajority}%</b> of the simulated elections.`;
+                            coalitionText += `which achieves a near-majority in <b>${topAmber.nearMajority}%</b> of simulations. Near-majorities may become effective majorities with the election of a Presiding Officer, who gives up their party vote.`;
                         }
                         takeaways.push(coalitionText);
-                    } else {
-                        takeaways.push("The simulations indicate significant challenges in forming a stable majority coalition in the Scottish Parliament.");
                     }
 
                     const sortedSeats = parties.map(p => ({
                         name: p.name,
                         totalSeats: (lastSimResults.averageSeats[p.name]?.total || 0) 
-                    }))
-                    .sort((a, b) => b.totalSeats - a.totalSeats);
+                    })).sort((a, b) => b.totalSeats - a.totalSeats);
 
                     if (sortedSeats.length >= 2) {
                         const leader = sortedSeats[0];
                         const second = sortedSeats[1];
-                        const seatDifference = leader.totalSeats - second.totalSeats; 
-                        let swingText = `The distribution of seats highlights the continued influence of regional list votes in shaping the overall composition of the Scottish Parliament.`; 
-
-                        if (leader.totalSeats < majoritySeats) { 
-                            if (seatDifference > 0) {
-                                const seatsToShift = Math.ceil(seatDifference / 2); 
-                                
-                                const avgVotePerSeat = 100 / totalParliamentSeats; 
-                                const estimatedVoteSwingNeeded = (seatsToShift * avgVotePerSeat);
-
-                                swingText = `The race for the largest party in the Scottish Parliament is exceptionally close between <b>${leader.name}</b> (average ${leader.totalSeats.toFixed(1)} seats) and <b>${second.name}</b> (average ${second.totalSeats.toFixed(1)} seats). A swing of approximately <b>${estimatedVoteSwingNeeded.toFixed(2)}%</b> from <b>${leader.name}</b> to <b>${second.name}</b> would be needed for <b>${second.name}</b> to become the largest party.`;
-                            } else {
-                                swingText = `The leading parties are neck-and-neck, indicating a highly unpredictable outcome where even a small shift in votes could change the largest party.`;
-                            }
-                        } else {
-                            swingText = `The distribution of seats highlights the continued influence of regional list votes in shaping the overall composition of the Scottish Parliament.`;
-                        }
-                        
-                        takeaways.push(swingText);
-                    } else {
-                        takeaways.push("Further analysis is needed to identify key dynamics, as seat distribution is currently limited.");
+                        takeaways.push(`The average result shows <b>${leader.name}</b> as the largest party with <b>${leader.totalSeats.toFixed(1)}</b> seats, ahead of <b>${second.name}</b> with <b>${second.totalSeats.toFixed(1)}</b> seats.`);
                     }
-
 
                     takeaways.forEach(text => {
                         const listItem = document.createElement('li');
@@ -1684,62 +1501,25 @@
                         const row = document.createElement('tr');
                         row.classList.add('hover:bg-gray-50', 'transition-colors');
 
-                        const dateCell = document.createElement('td');
-                        dateCell.classList.add('px-3', 'py-2', 'whitespace-nowrap', 'text-sm', 'font-medium', 'text-gray-900');
-                        dateCell.textContent = poll.rawDateString || 'No Date'; 
-                        row.appendChild(dateCell);
-
-                        const pollsterCell = document.createElement('td');
-                        pollsterCell.classList.add('px-3', 'py-2', 'whitespace-nowrap', 'text-sm', 'text-gray-500');
-                        pollsterCell.textContent = poll.pollster || 'N/A'; 
-                        row.appendChild(pollsterCell);
-
-                        parties.forEach(p => {
-                            const cell = document.createElement('td');
-                            cell.classList.add('px-3', 'py-2', 'whitespace-nowrap', 'text-center', 'text-sm', 'text-gray-500');
-                            cell.textContent = (poll.constituency[p.name] || 0).toFixed(1) + '%';
-                            row.appendChild(cell);
-                        });
-
-                        parties.forEach(p => {
-                            const cell = document.createElement('td');
-                            cell.classList.add('px-3', 'py-2', 'whitespace-nowrap', 'text-center', 'text-sm', 'text-gray-500');
-                            cell.textContent = (poll.regional[p.name] || 0).toFixed(1) + '%';
-                            row.appendChild(cell);
-                        });
-
+                        row.innerHTML = `
+                            <td class="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900">${poll.rawDateString || 'No Date'}</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-500">${poll.pollster || 'N/A'}</td>
+                            ${parties.map(p => `<td class="px-3 py-2 whitespace-nowrap text-center text-sm text-gray-500">${(poll.constituency[p.name] || 0).toFixed(1)}%</td>`).join('')}
+                            ${parties.map(p => `<td class="px-3 py-2 whitespace-nowrap text-center text-sm text-gray-500">${(poll.regional[p.name] || 0).toFixed(1)}%</td>`).join('')}
+                        `;
                         currentPollsTableBody.appendChild(row);
                     }
                 };
 
                 const updateCoalitionMessage = () => {
-                    let message = '';
-
-                    const allGreen = lastSimResults.coalitionsToRender.filter(c => getRagRating(c.parties) === 'green');
-                    const allAmber = lastSimResults.coalitionsToRender.filter(c => getRagRating(c.parties) === 'amber');
-                    const allRed = lastSimResults.coalitionsToRender.filter(c => getRagRating(c.parties) === 'red'); 
-
-                    const greenCoalitionsExist = allGreen.length > 0;
-                    const amberCoalitionsExist = allAmber.length > 0;
-                    const redCoalitionsExist = allRed.length > 0; 
-
                     const visibleRowsInTable = document.querySelectorAll('#coalition-table tr:not(.hidden-row)').length;
-
-                    if (!greenCoalitionsExist && !amberCoalitionsExist && redCoalitionsExist && !hiddenRed) {
-                        message = "No politically viable coalitions appear likely based on our simulations. This suggests a strong possibility of a second election taking place.";
-                    } else if (!greenCoalitionsExist && !amberCoalitionsExist && !hiddenAmber) {
-                        message = "No coalitions given a politically viability of Green or Amber could form in our simulations.";
-                    } else if (!greenCoalitionsExist && hiddenRed && hiddenAmber) {
-                        message = "No politically viable coalitions could form in our simulations.";
+                    if (visibleRowsInTable === 0 && lastSimResults.coalitionsToRender.length > 0) {
+                        coalitionMessageDiv.textContent = 'No coalitions are visible based on your filter settings.';
                     } else if (lastSimResults.coalitionsToRender.length === 0) {
-                        message = "No data available for coalition analysis."; 
+                        coalitionMessageDiv.textContent = "No coalitions appear likely based on our simulations.";
+                    } else {
+                        coalitionMessageDiv.textContent = '';
                     }
-                    
-                    if (visibleRowsInTable > 0) {
-                        message = '';
-                    }
-
-                    coalitionMessageDiv.textContent = message;
                 };
                 
                 runSimulationButton.addEventListener('click', updateAndRunSimulation); 
@@ -1754,3 +1534,4 @@
     </script>
 </body>
 </html>
+
