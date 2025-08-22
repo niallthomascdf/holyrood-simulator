@@ -49,7 +49,7 @@
         }
         .filter-button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 10px -1px rgba(0, 0, 0, 0.1), 0 4px 6px -1.px rgba(0, 0, 0, 0.06);
+            box-shadow: 0 6px 10px -1px rgba(0, 0, 0, 0.1), 0 4px 6px -1px rgba(0, 0, 0, 0.06);
         }
         .filter-button:active {
             transform: translateY(0);
@@ -86,7 +86,6 @@
             <p class="text-gray-500">
                 Predicting outcomes for the Holyrood elections using latest and historical polling data
             </p>
-            <!-- Removed the red disclaimer text -->
         </header>
 
         <!-- Methodology Section -->
@@ -97,7 +96,7 @@
             </summary>
             <div class="mt-3 text-sm text-gray-600 methodology-content">
                 <p>This simulator uses a <b>Monte Carlo simulation</b> to predict the election outcome. It runs <b>20,000 individual simulations</b>, each representing a possible election day scenario. For each simulation, poll numbers are adjusted based on historical "polling trend" data and a random "jitter" to account for natural polling variability.</p>
-               
+                
                 <h3 class="font-semibold mt-4 text-gray-700">How Votes are Converted to Seats:</h3>
                 <ul class="list-disc list-inside ml-4 text-xs space-y-1">
                     <li><b>Constituency Seats (73 seats):</b> These are allocated using a simplified <b>First-Past-the-Post (FPTP) proxy</b>. The party with the highest percentage of votes in a simulated constituency vote is assumed to win a proportional number of seats, with remaining seats distributed based on highest fractional remainders. This is a simplification, as actual FPTP is constituency-by- constituency.</li>
@@ -110,7 +109,7 @@
                     <li><b>Jitter:</b> A random "jitter" is added to each party's poll number in every simulation. This jitter is proportional to the party's average share, meaning larger parties will have smaller, more stable swings, while smaller parties can experience more volatile (but still realistic) fluctuations. This helps simulate the inherent uncertainty in polling.</li>
                     <li><b>Historical Trends:</b> The simulation incorporates an <b>averaged historical trend</b> derived from the 1999, 2003, 2007, 2011, 2016, and 2021 Scottish Parliament elections. For each historical election, a <b>weighted average of all pre-election polls</b> is calculated (giving more weight to polls closer to the election date). The trend for that election is then the difference between the actual election result and this weighted average of pre-election polls. These individual election trends are then averaged, with <b>more recent election years receiving a higher weight</b>, to create the overall historical trend applied to current polling.</li>
                 </ul>
-               
+                
                 <h3 class="font-semibold mt-4 text-gray-700">Important Notes:</h3>
                 <ul class="list-disc list-inside ml-4 text-xs space-y-1">
                     <li>The "Others" party acts as a general category for smaller parties and independents. Its votes contribute to seat allocation but it is not considered for explicit coalition formation.</li>
@@ -120,11 +119,10 @@
         </details>
 
         <!-- Latest Polls Section -->
-        <details class="space-y-4 bg-gray-50 p-6 rounded-xl border border-gray-200 group"> <!-- Removed 'open' to make it minimized by default -->
+        <details class="space-y-4 bg-gray-50 p-6 rounded-xl border border-gray-200 group">
             <summary class="text-xl font-semibold flex items-center gap-2 text-gray-700 cursor-pointer">
-                <!-- Updated icon to a graph-related one -->
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide-icon text-indigo-500 group-open:rotate-90 transition-transform"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
-                Latest Polls <!-- Renamed from Current Polls Being Used -->
+                Latest Polls
             </summary>
             <div class="mt-3 text-sm text-gray-600 space-y-4">
                 <div id="current-polls-table-container" class="overflow-x-auto">
@@ -178,7 +176,7 @@
                     </div>
                     <div id="constituency-sum" class="text-right text-sm font-semibold">Total: <span class="constituency-total-value">0.0</span>%</div>
                 </div>
-               
+                
                 <div class="space-y-4">
                     <h3 class="text-xl font-semibold flex items-center gap-2 text-gray-700">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide-icon text-purple-500"><path d="M12 2H2v10l9.294 9.294 9.707-9.707L12 2z"/><path d="M7.5 7.5h.01"/><path d="M16 16h.01"/><path d="M12 12h.01"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
@@ -194,13 +192,12 @@
         
         <!-- Discounting Checkboxes - Grouped for consistency -->
         <div class="flex flex-col md:flex-row justify-center gap-4 mt-4">
-            <!-- Removed the time-based filtering checkbox -->
             <div class="flex items-center space-x-2 bg-gray-50 p-3 rounded-xl border border-gray-200">
                 <input type="checkbox" id="enable-trend-application" class="form-checkbox h-5 w-5 text-indigo-600 rounded-md border-gray-300" checked>
                 <label for="enable-trend-application" class="text-gray-700 text-sm">Enable historical trend application</label>
             </div>
         </div>
-       
+        
         <!-- Run Simulation Button - Moved outside the details tag -->
         <div class="flex justify-center mt-4">
             <button id="run-simulation-button" class="bg-gray-900 text-white font-bold py-3 px-6 rounded-full text-lg hover:bg-gray-800 transition-colors filter-button flex items-center justify-center gap-2">
@@ -247,7 +244,7 @@
                 </table>
             </div>
         </div>
-       
+        
         <!-- Predicted Seat Distribution Section -->
         <div class="space-y-4">
             <h2 class="text-2xl font-bold flex items-center gap-2 text-center w-full justify-center">
@@ -323,7 +320,7 @@
             </div>
             <div id="coalition-message" class="text-center text-sm font-semibold h-5 mt-4"></div>
         </div>
-       
+        
         <!-- Key Takeaways Section -->
         <div class="space-y-4 bg-purple-50 p-6 rounded-xl border border-purple-200 shadow-sm">
             <h2 class="text-2xl font-bold flex items-center gap-2 text-center w-full justify-center text-purple-700">
@@ -389,19 +386,18 @@
                 // --- Constants and DOM Elements ---
                 // The URL of your deployed Google Apps Script Web App acting as a CORS proxy.
                 const appsScriptProxyUrl = "https://script.google.com/macros/s/AKfycbyermTNMtQ--T-Rpg0ylE4ooPvLj3IwtixyqBooJU-eXK7xFtLWNXIG80Y1mYOMJSYnhw/exec";
-               
+                
                 // Current Polls GIDs (These are the GIDs for your *cleaned* sheets)
                 const constituencyGid = '1550759519'; 
                 const regionalGid = '182062955';   
 
-                // Historical Election GIDs (These are the GIDs for your *manually cleaned and published* historical sheets)
-                // Added a "result" property to each historical election object
+                // --- CHANGE: Adjusted year weights for a slightly less aggressive but still pronounced effect ---
                 const historicalElectionGids = [
                     { year: 2021, constituencyGid: '819802892', regionalGid: '1188969757', electionDate: new Date('2021-05-06T00:00:00Z'), yearWeight: 1.0, resultGid: '1692290060' },
-                    { year: 2016, constituencyGid: '718925928', regionalGid: '89652159', electionDate: new Date('2016-05-05T00:00:00Z'), yearWeight: 0.8, resultGid: '1138865612' },
-                    { year: 2011, constituencyGid: '1485069294', regionalGid: '274836084', electionDate: new Date('2011-05-05T00:00:00Z'), yearWeight: 0.6, resultGid: '861788225' },
-                    { year: 2007, constituencyGid: '1481565062', regionalGid: '1549024075', electionDate: new Date('2007-05-03T00:00:00Z'), yearWeight: 0.4, resultGid: '1211756088' },
-                    { year: 2003, constituencyGid: '1481565062', regionalGid: '1549024075', electionDate: new Date('2003-05-01T00:00:00Z'), yearWeight: 0.2, resultGid: '1696236636' }
+                    { year: 2016, constituencyGid: '718925928', regionalGid: '89652159', electionDate: new Date('2016-05-05T00:00:00Z'), yearWeight: 0.75, resultGid: '1138865612' },
+                    { year: 2011, constituencyGid: '1485069294', regionalGid: '274836084', electionDate: new Date('2011-05-05T00:00:00Z'), yearWeight: 0.5, resultGid: '861788225' },
+                    { year: 2007, constituencyGid: '1481565062', regionalGid: '1549024075', electionDate: new Date('2007-05-03T00:00:00Z'), yearWeight: 0.25, resultGid: '1211756088' },
+                    { year: 2003, constituencyGid: '1481565062', regionalGid: '1549024075', electionDate: new Date('2003-05-01T00:00:00Z'), yearWeight: 0.1, resultGid: '1696236636' }
                 ];
                 
 
@@ -449,8 +445,6 @@
                 };
 
                 // --- Data Fetching and Parsing Functions ---
-                // Added requireDate parameter to control strictness of date column requirement
-                // Modified to also look for 'Pollster' column
                 const parseGoogleSheetData = (csvText, requireDate = false, sheetName = "Unknown Sheet") => { 
                     console.log(`--- Parsing CSV for ${sheetName} ---`);
                     console.log("Raw CSV Text:", csvText.substring(0, 200) + (csvText.length > 200 ? '...' : '')); 
@@ -472,18 +466,16 @@
                         if (!currentLine) continue;
 
                         const tempHeaders = currentLine.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(h => h.trim().replace(/^"|"$/g, ''));
-                       
+                        
                         const recognizedPartyCount = parties.some(p => {
                             if (tempHeaders.includes(p.name)) return true;
                             return Object.keys(partyHeaderAliases).some(alias => partyHeaderAliases[alias] === p.name && tempHeaders.includes(alias));
                         });
 
-                        // Specifically look for "Dates conducted" for the date column
                         dateColumnIndex = tempHeaders.findIndex(h => h.toLowerCase() === 'dates conducted'); 
                         pollsterColumnIndex = tempHeaders.findIndex(h => h.toLowerCase() === 'pollster'); 
-                       
+                        
                         if (recognizedPartyCount && (!requireDate || (dateColumnIndex !== -1 || pollsterColumnIndex !== -1 || sheetName.includes('Result')))) {
-                            // The `|| sheetName.includes('Result')` part is important for historical results sheets
                             headerRowIndex = i;
                             rawHeaders = tempHeaders;
                             console.log(`[${sheetName}] Detected header row at index ${i}:`, rawHeaders);
@@ -517,7 +509,7 @@
 
                         const rawValues = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.trim().replace(/^"|"$/g, ''));
                         console.log(`[${sheetName}] Parsing row ${i+1} - Raw values:`, rawValues);
-                       
+                        
                         const poll = { parties: {} };
                         let pollDate = null;
                         let rawDateString = ''; 
@@ -525,12 +517,12 @@
 
                         if (dateColumnIndex !== -1 && rawValues[dateColumnIndex] !== undefined) {
                             rawDateString = rawValues[dateColumnIndex].trim();
-                           
+                            
                             const parsedDate = new Date(rawDateString);
                             if (!isNaN(parsedDate.getTime())) {
                                 pollDate = parsedDate;
                             } else {
-                               
+                                
                                 console.warn(`[${sheetName}] Invalid date format in row ${i+1}: '${rawDateString}'. Date object will be null.`);
                             }
                         } else if (requireDate) {
@@ -555,7 +547,7 @@
                             if (colIndex !== undefined && rawValues[colIndex] !== undefined && rawValues[colIndex] !== '') {
                                 const cleanedValue = rawValues[colIndex].replace(/[^0-9.-]/g, '').trim();
                                 const parsedValue = parseFloat(cleanedValue);
-                               
+                                
                                 if (!isNaN(parsedValue)) {
                                     value = parsedValue;
                                     if (value !== 0) {
@@ -577,16 +569,16 @@
                             console.log(`[${sheetName}] Skipping row ${i+1}: No valid, non-zero party data found.`);
                         }
                     }
-                   
+                    
                     if (requireDate) {
                         polls.sort((a, b) => (a.date ? a.date.getTime() : 0) - (b.date ? b.date.getTime() : 0));
                     }
-                   
+                    
                     console.log(`--- Finished parsing CSV for ${sheetName} ---`);
                     console.log(`[${sheetName}] Final Parsed Polls:`, polls);
                     return polls;
                 };
-               
+                
                 const normalizeVotes = (votes) => {
                     let total = 0;
                     for (const party in votes) {
@@ -594,7 +586,7 @@
                             total += votes[party];
                         }
                     }
-                   
+                    
                     if (total === 0) return votes;
                     const factor = 100 / total;
                     const normalizedVotes = {};
@@ -608,7 +600,6 @@
                 const fetchPollsFromGoogleSheet = async () => {
                     try {
                         console.log("Attempting to fetch current polls...");
-                        // Fetch constituency data using the Apps Script proxy
                         const constituencyUrl = `${appsScriptProxyUrl}?gid=${constituencyGid}`;
                         const constituencyResponse = await fetch(constituencyUrl);
                         if (!constituencyResponse.ok) {
@@ -616,10 +607,8 @@
                             throw new Error(`HTTP error! status: ${constituencyResponse.status}`);
                         }
                         const constituencyCsvText = await constituencyResponse.text();
-                        // Current polls do not strictly require dates for their values, and we want them in sheet order
                         const constituencyPollsFull = parseGoogleSheetData(constituencyCsvText, false, "Current Constituency"); 
 
-                        // Fetch regional data using the Apps Script proxy
                         const regionalUrl = `${appsScriptProxyUrl}?gid=${regionalGid}`;
                         const regionalResponse = await fetch(regionalUrl);
                         if (!regionalResponse.ok) {
@@ -627,12 +616,10 @@
                             throw new Error(`HTTP error! status: ${regionalResponse.status}`);
                         }
                         const regionalCsvText = await regionalResponse.text();
-                        // Current polls do not strictly require dates for their values, and we want them in sheet order
                         const regionalPollsFull = parseGoogleSheetData(regionalCsvText, false, "Current Regional");
 
                         console.log(`Current Polls: Constituency polls (full objects) length: ${constituencyPollsFull.length}, Regional polls (full objects) length: ${regionalPollsFull.length}`);
-                       
-                        // Combine the two data sets into a single array of poll objects, ensuring consistency
+                        
                         const combinedPollsFull = [];
                         const numPollsToConsider = Math.min(constituencyPollsFull.length, regionalPollsFull.length);
 
@@ -645,8 +632,7 @@
                                 regional: normalizeVotes(regionalPollsFull[i].parties)
                             });
                         }
-                       
-                        // Slice the latest 5 polls directly from the BEGINNING of the combined array, assuming sheet order is latest first
+                        
                         const finalCurrentPolls = combinedPollsFull.slice(0, 5); 
                         console.log(`Combined and sliced current polls (latest 5, based on sheet order: first 5):`, finalCurrentPolls);
                         return finalCurrentPolls; 
@@ -656,7 +642,6 @@
                     }
                 };
 
-                // New helper function to calculate weighted average for a set of polls
                 const calculateWeightedAverageForPolls = (polls, electionDate) => {
                     const weightedSums = {};
                     let totalOverallWeight = 0;
@@ -668,11 +653,8 @@
                             console.warn(`Skipping poll due to missing date for weighted average calculation.`);
                             continue;
                         }
-                        // Calculate days from poll date to election date
                         const daysBeforeElection = Math.max(0, Math.floor((electionDate.getTime() - poll.date.getTime()) / millisecondsPerDay));
-                       
-                        // Simple inverse weighting: polls closer to election get higher weight
-                        // Add 1 to daysBeforeElection to avoid division by zero and ensure a base weight
+                        
                         const weight = 1 / (daysBeforeElection + 1); 
 
                         for (const partyName in poll.parties) {
@@ -685,7 +667,6 @@
 
                     const weightedAverages = {};
                     if (totalOverallWeight === 0) {
-                        // If no valid polls were found for weighted average, return zeros
                         parties.forEach(p => weightedAverages[p.name] = 0);
                         return weightedAverages;
                     }
@@ -705,40 +686,43 @@
 
                     for (const election of historicalElectionGids) {
                         try {
-                            const prePollsUrl = `${appsScriptProxyUrl}?gid=${election.constituencyGid}`; // Use const GID as proxy
+                            const prePollsUrlConst = `${appsScriptProxyUrl}?gid=${election.constituencyGid}`;
+                            const prePollsUrlReg = `${appsScriptProxyUrl}?gid=${election.regionalGid}`;
                             const resultUrl = `${appsScriptProxyUrl}?gid=${election.resultGid}`;
 
-                            const [prePollsResponse, resultResponse] = await Promise.all([fetch(prePollsUrl), fetch(resultUrl)]);
+                            const [prePollsConstResponse, prePollsRegResponse, resultResponse] = await Promise.all([
+                                fetch(prePollsUrlConst), 
+                                fetch(prePollsUrlReg),
+                                fetch(resultUrl)
+                            ]);
 
-                            if (!prePollsResponse.ok || !resultResponse.ok) {
+                            if (!prePollsConstResponse.ok || !prePollsRegResponse.ok || !resultResponse.ok) {
                                 console.error(`HTTP error fetching data for ${election.year}! Skipping jitter calculation for this year.`);
                                 continue;
                             }
                             
-                            // Parse pre-election polls for constituency and regional data
-                            const prePollsConst = parseGoogleSheetData(await prePollsResponse.text(), true, `Historical Pre-Polls ${election.year}`);
-                            const prePollsReg = parseGoogleSheetData(await fetch(`${appsScriptProxyUrl}?gid=${election.regionalGid}`).then(r => r.text()), true, `Historical Pre-Polls ${election.year}`);
+                            const prePollsConst = parseGoogleSheetData(await prePollsConstResponse.text(), true, `Historical Pre-Polls ${election.year} Const`);
+                            const prePollsReg = parseGoogleSheetData(await prePollsRegResponse.text(), true, `Historical Pre-Polls ${election.year} Reg`);
                             
                             if (prePollsConst.length < 2 || prePollsReg.length < 2) {
                                 console.warn(`Not enough pre-election polls for ${election.year} to calculate a meaningful average.`);
                                 continue;
                             }
 
-                            // Calculate weighted average of pre-election polls (excluding the result)
-                            const weightedAvgConstPoll = calculateWeightedAverageForPolls(prePollsConst.slice(0, -1), election.electionDate);
-                            const weightedAvgRegPoll = calculateWeightedAverageForPolls(prePollsReg.slice(0, -1), election.electionDate);
+                            const weightedAvgConstPoll = calculateWeightedAverageForPolls(prePollsConst, election.electionDate);
+                            const weightedAvgRegPoll = calculateWeightedAverageForPolls(prePollsReg, election.electionDate);
 
-                            // Get the actual result from the last line of the result GID
+                            // --- BUG FIX START ---
                             const electionResultData = parseGoogleSheetData(await resultResponse.text(), false, `Historical Results ${election.year}`);
-                            if (electionResultData.length === 0) {
-                                console.warn(`Actual election results missing for ${election.year}. Skipping jitter calculation.`);
+                            if (electionResultData.length < 2) { // Expect at least 2 rows: one for constituency, one for regional.
+                                console.warn(`Actual election results for ${election.year} do not contain enough data (expected 2 rows, got ${electionResultData.length}). Skipping jitter calculation for this year.`);
                                 continue;
                             }
-                            const actualResult = electionResultData[0];
-                            const actualResultConst = actualResult.constituency;
-                            const actualResultReg = actualResult.regional;
+                            // Assuming the first data row is constituency results and the second is regional.
+                            const actualResultConst = normalizeVotes(electionResultData[0].parties);
+                            const actualResultReg = normalizeVotes(electionResultData[1].parties);
+                            // --- BUG FIX END ---
 
-                            // Calculate the absolute difference for each party
                             parties.forEach(p => {
                                 if (actualResultConst[p.name] !== undefined && weightedAvgConstPoll[p.name] !== undefined) {
                                     const errorConst = Math.abs(actualResultConst[p.name] - weightedAvgConstPoll[p.name]);
@@ -755,7 +739,6 @@
                         }
                     }
 
-                    // Average the errors to get the final jitter factor
                     const newJitters = {};
                     parties.forEach(p => {
                         const avgErrorConst = partyPollingErrors[p.name].constituency.length > 0 ?
@@ -763,16 +746,13 @@
                         const avgErrorReg = partyPollingErrors[p.name].regional.length > 0 ?
                             partyPollingErrors[p.name].regional.reduce((sum, val) => sum + val, 0) / partyPollingErrors[p.name].regional.length : 0;
                         
-                        // Use a simple average of the two error types for the final jitter factor
                         newJitters[p.name] = (avgErrorConst + avgErrorReg) / 2;
-                        // Add a small floor to prevent jitter from being zero
                         if (newJitters[p.name] < 0.5) {
                             newJitters[p.name] = 0.5;
                         }
-                        // Assign a higher default jitter for new or volatile parties without history
                         if (p.name === 'Alba' || p.name === 'Reform' || p.name === 'Green') {
                              if (newJitters[p.name] < 2.0) {
-                                newJitters[p.name] = 2.0;
+                                 newJitters[p.name] = 2.0;
                              }
                         }
                     });
@@ -783,11 +763,6 @@
 
                 const fetchHistoricalTrends = async () => {
                     console.log("Attempting to fetch historical trends...");
-                    const nextHolyroodElectionDate = new Date('2026-05-07T00:00:00Z');
-                    const now = new Date();
-                    const currentDaysUntilNextElection = Math.floor((nextHolyroodElectionDate.getTime() - now.getTime()) / millisecondsPerDay);
-                    console.log(`Current days until next election (equivalent timeframe): ${currentDaysUntilNextElection} days`);
-
                     const isTrendApplicationEnabled = enableTrendApplicationCheckbox.checked; 
 
                     let allConstituencyTrendsSum = {};
@@ -819,15 +794,19 @@
 
                             let allConstPollsForElection = parseGoogleSheetData(constCsvText, true, `Historical ${election.year} Constituency`); 
                             let allRegPollsForElection = parseGoogleSheetData(regCsvText, true, `Historical ${election.year} Regional`);
+                            
+                            // --- BUG FIX START ---
                             const electionResultData = parseGoogleSheetData(await resultResponse.text(), false, `Historical Results ${election.year}`);
                             
-                            if (allConstPollsForElection.length === 0 || allRegPollsForElection.length === 0 || electionResultData.length === 0) {
-                                console.warn(`Data missing for ${election.year}. Cannot calculate trend. Skipping.`);
+                            if (allConstPollsForElection.length === 0 || allRegPollsForElection.length === 0 || electionResultData.length < 2) {
+                                console.warn(`Data missing for ${election.year} (pre-polls or results). Cannot calculate trend. Skipping.`);
                                 continue;
                             }
 
-                            const actualConstResult = normalizeVotes(electionResultData[0].constituency);
-                            const actualRegResult = normalizeVotes(electionResultData[0].regional);
+                            // Assuming the first data row is constituency results and the second is regional.
+                            const actualConstResult = normalizeVotes(electionResultData[0].parties);
+                            const actualRegResult = normalizeVotes(electionResultData[1].parties);
+                            // --- BUG FIX END ---
 
                             let pollsForWeightedAvgConst = allConstPollsForElection.filter(p => p.date && p.date.getTime() < election.electionDate.getTime());
                             let pollsForWeightedAvgReg = allRegPollsForElection.filter(p => p.date && p.date.getTime() < election.electionDate.getTime());
@@ -843,7 +822,7 @@
                             parties.forEach(p => {
                                 const constTrend = (actualConstResult[p.name] || 0) - (weightedAvgConstPoll[p.name] || 0);
                                 const regTrend = (actualRegResult[p.name] || 0) - (weightedAvgRegPoll[p.name] || 0);
-                               
+                                
                                 allConstituencyTrendsSum[p.name] += constTrend * election.yearWeight;
                                 allRegionalTrendsSum[p.name] += regTrend * election.yearWeight;
                             });
@@ -890,7 +869,7 @@
                                 try {
                                     runMonteCarloSimulation();
                                     renderCurrentPollsTable(currentPollsInUse); 
-                                    renderInputs(); // Call renderInputs to ensure new poll inputs are correctly rendered
+                                    renderInputs();
                                     console.log("Simulation run completed successfully.");
                                 } catch (simError) {
                                     console.error("Error during Monte Carlo simulation run:", simError);
@@ -916,9 +895,6 @@
                 };
 
                 // --- Utility Functions ---
-
-                // Generates a random number with a normal-ish distribution (Bell Curve approximation)
-                // https://stackoverflow.com/questions/25582882/javascript-math-random-normal-distribution-gaussian-bell-curve
                 const randn_bm = () => {
                     let u = 0, v = 0;
                     while(u === 0) u = Math.random(); 
@@ -957,7 +933,7 @@
                     parties.forEach(p => {
                         const constInput = document.getElementById(`constituency-new-${p.name}`);
                         const regInput = document.getElementById(`regional-new-${p.name}`);
-                       
+                        
                         let constValue = (constInput && constInput.value !== '') ? parseFloat(constInput.value) : 0;
                         let regValue = (regInput && regInput.value !== '') ? parseFloat(regInput.value) : 0;
 
@@ -976,7 +952,7 @@
                         constituencySum += constValue;
                         regionalSum += regValue;
                     });
-                   
+                    
                     constituencySumSpan.textContent = constituencySum.toFixed(1);
                     regionalSumSpan.textContent = regionalSum.toFixed(1);
 
@@ -1021,7 +997,7 @@
                         totalSeats: 0,
                         regionalVoteValue: regionalVotes[p.name] || 0,
                     }));
-                   
+                    
                     let remainingConstituencySeats = totalConstituencySeats;
                     const constituencySeatAllocation = {};
                     const sortedConstituencyParties = [...finalResults].sort((a, b) => (constituencyVotes[b.name] || 0) - (constituencyVotes[a.name] || 0));
@@ -1032,7 +1008,7 @@
                         constituencySeatAllocation[party.name] = seats;
                         remainingConstituencySeats -= seats;
                     });
-                   
+                    
                     if (remainingConstituencySeats > 0) {
                         const fractionalParties = sortedConstituencyParties
                             .map(party => ({
@@ -1047,7 +1023,7 @@
                             }
                         }
                     }
-                   
+                    
                     finalResults.forEach(p => {
                         p.constituencySeats = constituencySeatAllocation[p.name] || 0;
                     });
@@ -1074,7 +1050,7 @@
                         }
                         remainingRegionalSeats--;
                     }
-                   
+                    
                     finalResults.forEach(p => {
                         p.totalSeats = p.constituencySeats + p.regionalSeats;
                     });
@@ -1155,7 +1131,7 @@
                         const coalitionParties = mainParties;
                         const twoPartyCombos = getCombinations(coalitionParties, 2);
                         const threePartyCombos = getCombinations(coalitionParties, 3);
-                       
+                        
                         const allCombos = [...twoPartyCombos, ...threePartyCombos];
                         allCombos.forEach(combo => {
                             const baseCoalitionKey = [...combo].sort().join(' + '); 
@@ -1163,7 +1139,7 @@
                             coalitionNearMajorityCounts[baseCoalitionKey] = 0;
                             coalitionSeatTotals[baseCoalitionKey] = 0;
                             coalitionMaxSeats[baseCoalitionKey] = 0;
-                           
+                            
                             baseCoalitionSeniorityTracker[baseCoalitionKey] = { totalOccurrences: 0 };
                             combo.forEach(pName => {
                                 baseCoalitionSeniorityTracker[baseCoalitionKey][pName] = 0;
@@ -1171,7 +1147,7 @@
                         });
 
                         const newPollInput = parseNewPollFromInputs();
-                       
+                        
                         let pollsForSimulation = [...currentPollsInUse]; 
 
                         if (newPollInput && (Object.values(newPollInput.constituency).some(v => v > 0) || Object.values(newPollInput.regional).some(v => v > 0))) {
@@ -1198,23 +1174,22 @@
                         });
 
                         const trendToApply = averagedHistoricalTrend;
-                       
+                        
                         console.log("Starting Monte Carlo loops...");
                         for (let i = 0; i < numSimulations; i++) {
                             const simulatedConstituency = {};
                             const simulatedRegional = {};
-                           
+                            
                             parties.forEach(p => {
-                                // Now using the calculated jitter factors
                                 const jitter = (randn_bm() - 0.5) * 2 * (calculatedJitterFactors[p.name] || 0.5);
                                 
                                 simulatedConstituency[p.name] = (avgConstituency[p.name] || 0) + (trendToApply.constituency[p.name] || 0) + jitter;
                                 simulatedRegional[p.name] = (avgRegional[p.name] || 0) + (trendToApply.regional[p.name] || 0) + jitter;
                             });
-                           
+                            
                             const normalizedConstituency = normalizeVotes(simulatedConstituency);
                             const normalizedRegional = normalizeVotes(simulatedRegional);
-                           
+                            
                             const simulatedResults = calculateSeats(normalizedConstituency, normalizedRegional);
                             const resultsMap = simulatedResults.reduce((acc, curr) => { acc[curr.name] = curr; return acc; }, {});
 
@@ -1240,14 +1215,14 @@
                                 const baseCoalitionKey = [...combo].sort().join(' + '); 
 
                                 const sortedComboBySeats = [...combo].sort((a, b) => (resultsMap[b]?.totalSeats || 0) - (resultsMap[a]?.totalSeats || 0));
-                               
+                                
                                 baseCoalitionSeniorityTracker[baseCoalitionKey].totalOccurrences++;
                                 if (sortedComboBySeats[0]) {
                                     baseCoalitionSeniorityTracker[baseCoalitionKey][sortedComboBySeats[0]]++;
                                 }
 
                                 const coalitionTotalSeats = combo.reduce((sum, partyName) => sum + (resultsMap[partyName]?.totalSeats || 0), 0);
-                               
+                                
                                 coalitionSeatTotals[baseCoalitionKey] += coalitionTotalSeats;
                                 if (coalitionTotalSeats > coalitionMaxSeats[baseCoalitionKey]) {
                                     coalitionMaxSeats[baseCoalitionKey] = coalitionTotalSeats;
@@ -1262,7 +1237,7 @@
                             });
                         }
                         console.log("Monte Carlo loops finished.");
-                       
+                        
                         const majorityProbabilities = {};
                         const pluralityProbabilities = {};
                         const averageSeats = {};
@@ -1276,9 +1251,9 @@
                             averageSeats[p.name] = {
                                 constituency: (seatTotaler[p.name].constituency / numSimulations), 
                                 regional: (seatTotaler[p.name].regional / numSimulations),  
-                                total: (seatTotaler[p.name].total / numSimulations)                          };
+                                total: (seatTotaler[p.name].total / numSimulations)            };
                         });
-                       
+                        
                         Object.keys(coalitionSeatTotals).forEach(key => { 
                             coalitionMajorityProbs[key] = (coalitionMajorityCounts[key] / numSimulations * 100).toFixed(2);
                             coalitionNearMajorityProbs[key] = (coalitionNearMajorityCounts[key] / numSimulations * 100).toFixed(2);
@@ -1288,11 +1263,11 @@
                         lastSimResults.majorityProbabilities = majorityProbabilities;
                         lastSimResults.pluralityProbabilities = pluralityProbabilities;
                         lastSimResults.averageSeats = averageSeats;
-                       
+                        
                         const rawCoalitionsForDisplay = Object.keys(averageCoalitionSeats).map(key => { 
                             const partiesInKey = key.split(' + ');
                             const currentMaxSeats = coalitionMaxSeats[key] || 0; 
-                           
+                            
                             return {
                                 name: key, 
                                 parties: partiesInKey,
@@ -1320,7 +1295,7 @@
                             }
                             return true;
                         });
-                       
+                        
                         lastSimResults.coalitionsToRender = nonRedundantCoalitionsForDisplay.map(c => {
                             const sortedPartiesForDisplayName = [...c.parties].sort((a, b) => {
                                 const seatsA = averageSeats[a]?.total || 0; 
@@ -1379,40 +1354,6 @@
                     });
                 };
                 
-                // This function is removed as part of the user's request.
-                // const renderManualTrendInputs = () => {
-                //     manualTrendConstDiv.innerHTML = '';
-                //     manualTrendRegDiv.innerHTML = '';
-                //     let constTrendSum = 0;
-                //     let regTrendSum = 0;
-
-                //     const sortedParties = [...parties].sort((a,b) => a.name.localeCompare(b.name));
-
-                //     sortedParties.forEach(p => {
-                //         const jitterFactor = calculatedJitterFactors[p.name] || 0;
-                //         const defaultConstTrend = averagedHistoricalTrend.constituency[p.name] || 0;
-                //         const defaultRegTrend = averagedHistoricalTrend.regional[p.name] || 0;
-                        
-                //         constTrendSum += defaultConstTrend;
-                //         regTrendSum += defaultRegTrend;
-
-                //         const constInputHtml = createTrendInputHtml(p, 'constituency', defaultConstTrend);
-                //         const regInputHtml = createTrendInputHtml(p, 'regional', defaultRegTrend);
-
-                //         manualTrendConstDiv.innerHTML += constInputHtml;
-                //         manualTrendRegDiv.innerHTML += regInputHtml;
-                //     });
-
-                //     manualTrendConstSumSpan.textContent = constTrendSum.toFixed(1);
-                //     manualTrendRegSumSpan.textContent = regTrendSum.toFixed(1);
-                    
-                //     document.querySelectorAll('details #manual-constituency-trends input, details #manual-regional-trends input').forEach(input => {
-                //         input.addEventListener('input', () => {
-                //             parseManualTrendsFromInputs();
-                //         });
-                //     });
-                // };
-
                 const createInputHtml = (p, type) => `
                     <div class="flex items-center space-x-4 bg-gray-50 p-3 rounded-lg border border-gray-200">
                         <div class="w-4 h-4 rounded-full" style="background-color: ${p.color};"></div>
@@ -1437,7 +1378,7 @@
                         probabilityTableBody.innerHTML = `<tr class="text-center text-gray-500 italic"><td colspan="3" class="px-6 py-4">No data available for simulation.</td></tr>`;
                         return;
                     }
-                   
+                    
                     probabilityTableBody.innerHTML = '';
                     const sortedParties = parties.map(p => ({
                         ...p,
@@ -1468,39 +1409,33 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-bold text-gray-900">
                                     ${p.pluralityProb}%
-
                                 </td>
                             </tr>
                         `;
                         probabilityTableBody.innerHTML += row;
                     });
                 };
-               
+                
                 const renderCoalitionProbabilities = (coalitionMajorityProbs, coalitionNearMajorityProbs, averageCoalitionSeats, coalitionMaxSeats, individualAvgSeats, baseCoalitionSeniorityTracker) => {
-                    // Always clear the message div before re-rendering
                     coalitionMessageDiv.textContent = ''; 
 
                     const coalitionsToRender = lastSimResults.coalitionsToRender;
-                   
+                    
                     if (!coalitionsToRender || coalitionsToRender.length === 0) {
                         coalitionTableBody.innerHTML = `<tr class="text-center text-gray-500 italic"><td colspan="5" class="px-6 py-4">No data available for simulation.</td></tr>`;
                         updateCoalitionMessage(); 
                         return;
                     }
 
-                    // Fix: Corrected typo from 'coalitionsTableBody' to 'coalitionTableBody'
                     coalitionTableBody.innerHTML = ''; 
 
                     coalitionsToRender.forEach(coalition => {
                         const ragRating = getRagRating(coalition.parties);
-                        // Apply hidden-row class based on filter state
                         const hiddenClass = ((hiddenRed && ragRating === 'red') || (hiddenAmber && ragRating === 'amber')) ? 'hidden-row' : '';
-                       
-                        // Generate seniority breakdown HTML
+                        
                         let seniorityHtml = '';
                         const seniorityInfo = baseCoalitionSeniorityTracker[coalition.baseCoalitionKey];
                         if (seniorityInfo && seniorityInfo.totalOccurrences > 0) {
-                            // Sort parties by their count within this specific seniorityInfo for display
                             const sortedSeniorityParties = Object.keys(seniorityInfo).filter(pName => pName !== 'totalOccurrences').sort((a, b) => seniorityInfo[b] - seniorityInfo[a]);
                             seniorityHtml = sortedSeniorityParties.map(pName => {
                                 const prob = ((seniorityInfo[pName] / seniorityInfo.totalOccurrences) * 100).toFixed(1);
@@ -1534,7 +1469,7 @@
                     });
                     updateCoalitionMessage(); 
                 };
-               
+                
                 const renderForecastedSeats = (averageSeats) => {
                     if (!averageSeats || Object.keys(averageSeats).length === 0) {
                         forecastedSeatsTableBody.innerHTML = `<tr class="text-center text-gray-500 italic"><td colspan="4" class="px-6 py-4">No data available for simulation.</td></tr>`;
@@ -1582,7 +1517,7 @@
 
                 const toggleCoalitionVisibility = (rating) => {
                     const button = document.getElementById(`toggle-${rating}-button`);
-                   
+                    
                     let isHidden;
                     if (rating === 'red') {
                         hiddenRed = !hiddenRed;
@@ -1602,7 +1537,7 @@
                         button.classList.add(`bg-${rating}-500`);
                         button.classList.remove('bg-gray-500');
                     }
-                   
+                    
                     document.querySelectorAll(`#coalition-table tr[data-rag-rating="${rating}"]`).forEach(row => {
                         if (isHidden) {
                             row.classList.add('hidden-row');
@@ -1612,13 +1547,13 @@
                     });
                     updateCoalitionMessage(); 
                 };
-               
+                
                 const sortCoalitionParties = (partyNames, averageSeats) => {
                     const partySeats = partyNames.map(name => ({
                         name,
                         seats: (averageSeats[name]?.total || 0) 
                     }));
-                   
+                    
                     partySeats.sort((a, b) => b.seats - a.seats); 
                     return partySeats.map(p => p.name).join(' + '); 
                 };
@@ -1702,7 +1637,7 @@
                         if (leader.totalSeats < majoritySeats) { 
                             if (seatDifference > 0) {
                                 const seatsToShift = Math.ceil(seatDifference / 2); 
-                               
+                                
                                 const avgVotePerSeat = 100 / totalParliamentSeats; 
                                 const estimatedVoteSwingNeeded = (seatsToShift * avgVotePerSeat);
 
@@ -1713,7 +1648,7 @@
                         } else {
                             swingText = `The distribution of seats highlights the continued influence of regional list votes in shaping the overall composition of the Scottish Parliament.`;
                         }
-                       
+                        
                         takeaways.push(swingText);
                     } else {
                         takeaways.push("Further analysis is needed to identify key dynamics, as seat distribution is currently limited.");
@@ -1799,14 +1734,14 @@
                     } else if (lastSimResults.coalitionsToRender.length === 0) {
                         message = "No data available for coalition analysis."; 
                     }
-                   
+                    
                     if (visibleRowsInTable > 0) {
                         message = '';
                     }
 
                     coalitionMessageDiv.textContent = message;
                 };
-               
+                
                 runSimulationButton.addEventListener('click', updateAndRunSimulation); 
                 toggleRedButton.addEventListener('click', () => toggleCoalitionVisibility('red'));
                 toggleAmberButton.addEventListener('click', () => toggleCoalitionVisibility('amber'));
@@ -1819,5 +1754,3 @@
     </script>
 </body>
 </html>
-
-
