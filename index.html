@@ -443,15 +443,12 @@
 
                         const tempHeaders = currentLine.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(h => h.trim().replace(/^"|"$/g, ''));
                         
-                        const recognizedPartyCount = parties.some(p => {
-                            if (tempHeaders.includes(p.name)) return true;
-                            return Object.keys(partyHeaderAliases).some(alias => partyHeaderAliases[alias] === p.name && tempHeaders.includes(alias));
-                        });
+                        const hasPartyHeader = tempHeaders.some(h => partyHeaderAliases[h]);
 
-                        dateColumnIndex = tempHeaders.findIndex(h => h.toLowerCase() === 'dates conducted'); 
+                        dateColumnIndex = tempHeaders.findIndex(h => h.toLowerCase().includes('date'));
                         pollsterColumnIndex = tempHeaders.findIndex(h => h.toLowerCase() === 'pollster'); 
                         
-                        if (recognizedPartyCount && (!requireDate || (dateColumnIndex !== -1 || pollsterColumnIndex !== -1 || sheetName.includes('Result')))) {
+                        if (hasPartyHeader) {
                             headerRowIndex = i;
                             rawHeaders = tempHeaders;
                             break;
@@ -486,7 +483,11 @@
                         if (dateColumnIndex !== -1 && rawValues[dateColumnIndex] !== undefined) {
                             rawDateString = rawValues[dateColumnIndex].trim();
                             
-                            const parsedDate = new Date(rawDateString);
+                            // Handle date ranges by taking the first date
+                            const dateMatch = rawDateString.match(/(\d{1,2}\s[A-Za-z]+\s\d{4})/);
+                            const dateToParse = dateMatch ? dateMatch[0] : rawDateString;
+
+                            const parsedDate = new Date(dateToParse);
                             if (!isNaN(parsedDate.getTime())) {
                                 pollDate = parsedDate;
                             }
@@ -498,9 +499,7 @@
 
                         if (pollsterColumnIndex !== -1 && rawValues[pollsterColumnIndex] !== undefined) {
                             pollsterName = rawValues[pollsterColumnIndex].trim();
-                        } else if (requireDate) { 
-                            continue;
-                        }
+                        } 
                         poll.pollster = pollsterName; 
 
                         let hasAnyValidPartyDataInRow = false;
@@ -527,7 +526,7 @@
                     }
                     
                     if (requireDate) {
-                        polls.sort((a, b) => (a.date ? a.date.getTime() : 0) - (b.date ? b.date.getTime() : 0));
+                        polls.sort((a, b) => (b.date ? b.date.getTime() : 0) - (a.date ? a.date.getTime() : 0));
                     }
                     
                     return polls;
@@ -1534,4 +1533,3 @@
     </script>
 </body>
 </html>
-
