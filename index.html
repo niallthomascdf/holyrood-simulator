@@ -1,4 +1,4 @@
-<!DOCTYPE html><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -341,14 +341,14 @@
             
             document.addEventListener('DOMContentLoaded', async () => {
                 const parties = [
-                    { name: 'SNP', color: '#FDF38E', jitterFactor: 0 },
-                    { name: 'Labour', color: '#E4003B', jitterFactor: 0 },
-                    { name: 'Conservative', color: '#0187DC', jitterFactor: 0 },
-                    { name: 'Green', color: '#65D56E', jitterFactor: 0 },
-                    { name: 'Liberal Democrat', color: '#FAA61A', jitterFactor: 0 },
-                    { name: 'Alba', color: 'navy', jitterFactor: 0 }, 
-                    { name: 'Reform', color: '#12B2E6', jitterFactor: 0 },
-                    { name: 'Others', color: '#CCCCCC', jitterFactor: 0 }
+                    { name: 'SNP', color: '#FDF38E' },
+                    { name: 'Labour', color: '#E4003B' },
+                    { name: 'Conservative', color: '#0187DC' },
+                    { name: 'Green', color: '#65D56E' },
+                    { name: 'Liberal Democrat', color: '#FAA61A' },
+                    { name: 'Alba', color: 'navy' }, 
+                    { name: 'Reform', color: '#12B2E6' },
+                    { name: 'Others', color: '#CCCCCC' }
                 ];
 
                 const partyHeaderAliases = {
@@ -372,18 +372,20 @@
                     'Other': 'Others' 
                 };
 
-                // --- Constants and DOM Elements ---
-                const appsScriptProxyUrl = "https://script.google.com/macros/s/AKfycbyermTNMtQ--T-Rpg0ylE4ooPvLj3IwtixyqBooJU-eXK7xFtLWNXIG80Y1mYOMJSYnhw/exec";
+                // --- NEW: Use a more direct export link format ---
+                const sheetId = "183G691mjKmxFq9bNZmo4MmeBGfUkRbZMBxmaz5PLy8k";
+                const exportBaseUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
                 
+                // --- UPDATED: GIDs for current polls ---
                 const constituencyGid = '1550759519'; 
                 const regionalGid = '182062955';   
 
+                // --- UPDATED: Historical Election GIDs (2003 removed) ---
                 const historicalElectionGids = [
-                    { year: 2021, constituencyGid: '819802892', regionalGid: '1188969757', electionDate: new Date('2021-05-06T00:00:00Z'), yearWeight: 1.0, resultGid: '1692290060' },
-                    { year: 2016, constituencyGid: '718925928', regionalGid: '89652159', electionDate: new Date('2016-05-05T00:00:00Z'), yearWeight: 0.75, resultGid: '1138865612' },
-                    { year: 2011, constituencyGid: '1485069294', regionalGid: '274836084', electionDate: new Date('2011-05-05T00:00:00Z'), yearWeight: 0.5, resultGid: '861788225' },
-                    { year: 2007, constituencyGid: '1481565062', regionalGid: '1549024075', electionDate: new Date('2007-05-03T00:00:00Z'), yearWeight: 0.25, resultGid: '1211756088' },
-                    { year: 2003, constituencyGid: '1481565062', regionalGid: '1549024075', electionDate: new Date('2003-05-01T00:00:00Z'), yearWeight: 0.1, resultGid: '1696236636' }
+                    { year: 2021, constituencyGid: '819802892', regionalGid: '1188969757', electionDate: new Date('2021-05-06T00:00:00Z'), yearWeight: 1.0 },
+                    { year: 2016, constituencyGid: '718925928', regionalGid: '89652159', electionDate: new Date('2016-05-05T00:00:00Z'), yearWeight: 0.75 },
+                    { year: 2011, constituencyGid: '1485069294', regionalGid: '274836084', electionDate: new Date('2011-05-05T00:00:00Z'), yearWeight: 0.5 },
+                    { year: 2007, constituencyGid: '1481565062', regionalGid: '1549024075', electionDate: new Date('2007-05-03T00:00:00Z'), yearWeight: 0.25 }
                 ];
                 
                 const totalConstituencySeats = 73;
@@ -425,54 +427,26 @@
                 };
 
                 // --- Data Fetching and Parsing Functions ---
-                const parseGoogleSheetData = (csvText, requireDate = false, sheetName = "Unknown Sheet") => { 
+                const parseGoogleSheetData = (csvText, sheetName = "Unknown Sheet", dataStartRow = 1, dataEndRow = -1) => {
                     const polls = [];
                     const lines = csvText.split('\n');
-                    if (lines.length <= 1) {
-                        return [];
-                    }
+                    if (lines.length <= 1) return [];
 
-                    let headerRowIndex = -1;
-                    let rawHeaders = [];
-                    let dateColumnIndex = -1;
-                    let pollsterColumnIndex = -1; 
-
-                    for (let i = 0; i < lines.length; i++) {
-                        const currentLine = lines[i].trim();
-                        if (!currentLine) continue;
-
-                        const tempHeaders = currentLine.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(h => h.trim().replace(/^"|"$/g, ''));
-                        
-                        const hasPartyHeader = tempHeaders.some(h => partyHeaderAliases[h]);
-
-                        // BUG FIX: Made date column detection more flexible
-                        dateColumnIndex = tempHeaders.findIndex(h => h.toLowerCase().includes('date'));
-                        pollsterColumnIndex = tempHeaders.findIndex(h => h.toLowerCase() === 'pollster'); 
-                        
-                        if (hasPartyHeader) {
-                            headerRowIndex = i;
-                            rawHeaders = tempHeaders;
-                            break;
-                        }
-                    }
-
-                    if (headerRowIndex === -1) {
-                        return [];
-                    }
-
+                    const rawHeaders = lines[0].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(h => h.trim().replace(/^"|"$/g, ''));
                     const headerMap = {};
                     rawHeaders.forEach((h, i) => {
                         const canonicalName = partyHeaderAliases[h];
-                        if (canonicalName) {
-                            headerMap[canonicalName] = i;
-                        }
+                        if (canonicalName) headerMap[canonicalName] = i;
                     });
 
-                    for (let i = headerRowIndex + 1; i < lines.length; i++) {
+                    const dateColumnIndex = rawHeaders.findIndex(h => h.toLowerCase().includes('date'));
+                    const pollsterColumnIndex = rawHeaders.findIndex(h => h.toLowerCase() === 'pollster');
+
+                    const endRow = dataEndRow === -1 ? lines.length : dataEndRow;
+
+                    for (let i = dataStartRow; i < endRow; i++) {
                         const line = lines[i].trim();
-                        if (!line) {
-                            continue;
-                        }
+                        if (!line) continue;
 
                         const rawValues = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.trim().replace(/^"|"$/g, ''));
                         
@@ -490,11 +464,6 @@
                             const parsedDate = new Date(dateToParse);
                             if (!isNaN(parsedDate.getTime())) {
                                 pollDate = parsedDate;
-                            }
-                        } else if (requireDate) {
-                             // BUG FIX: Don't skip the row if it's a result sheet without a date
-                            if (!sheetName.toLowerCase().includes('result')) {
-                                continue;
                             }
                         }
                         poll.date = pollDate;
@@ -515,9 +484,7 @@
                                 
                                 if (!isNaN(parsedValue)) {
                                     value = parsedValue;
-                                    if (value !== 0) {
-                                        hasAnyValidPartyDataInRow = true;
-                                    }
+                                    if (value !== 0) hasAnyValidPartyDataInRow = true;
                                 }
                             }
                             poll.parties[p.name] = value;
@@ -528,9 +495,7 @@
                         }
                     }
                     
-                    if (requireDate) {
-                        polls.sort((a, b) => (b.date ? b.date.getTime() : 0) - (a.date ? a.date.getTime() : 0));
-                    }
+                    polls.sort((a, b) => (b.date ? b.date.getTime() : 0) - (a.date ? a.date.getTime() : 0));
                     
                     return polls;
                 };
@@ -555,21 +520,18 @@
 
                 const fetchPollsFromGoogleSheet = async () => {
                     try {
-                        const constituencyUrl = `${appsScriptProxyUrl}?gid=${constituencyGid}`;
-                        const constituencyResponse = await fetch(constituencyUrl);
-                        if (!constituencyResponse.ok) {
-                            throw new Error(`HTTP error! status: ${constituencyResponse.status}`);
-                        }
+                        const constituencyUrl = `${exportBaseUrl}&gid=${constituencyGid}`;
+                        const regionalUrl = `${exportBaseUrl}&gid=${regionalGid}`;
+                        
+                        const constituencyResponse = await fetch(constituencyUrl, { cache: 'no-cache' });
+                        if (!constituencyResponse.ok) throw new Error(`HTTP error fetching current constituency polls! status: ${constituencyResponse.status}`);
                         const constituencyCsvText = await constituencyResponse.text();
-                        const constituencyPollsFull = parseGoogleSheetData(constituencyCsvText, false, "Current Constituency"); 
+                        const constituencyPollsFull = parseGoogleSheetData(constituencyCsvText, "Current Constituency"); 
 
-                        const regionalUrl = `${appsScriptProxyUrl}?gid=${regionalGid}`;
-                        const regionalResponse = await fetch(regionalUrl);
-                        if (!regionalResponse.ok) {
-                            throw new Error(`HTTP error! status: ${regionalResponse.status}`);
-                        }
+                        const regionalResponse = await fetch(regionalUrl, { cache: 'no-cache' });
+                        if (!regionalResponse.ok) throw new Error(`HTTP error fetching current regional polls! status: ${regionalResponse.status}`);
                         const regionalCsvText = await regionalResponse.text();
-                        const regionalPollsFull = parseGoogleSheetData(regionalCsvText, false, "Current Regional");
+                        const regionalPollsFull = parseGoogleSheetData(regionalCsvText, "Current Regional");
                         
                         const combinedPollsFull = [];
                         const numPollsToConsider = Math.min(constituencyPollsFull.length, regionalPollsFull.length);
@@ -599,9 +561,8 @@
                     parties.forEach(p => weightedSums[p.name] = 0); 
 
                     for (const poll of polls) {
-                        if (!poll.date) {
-                            continue;
-                        }
+                        if (!poll.date) continue;
+                        
                         const daysBeforeElection = Math.max(0, Math.floor((electionDate.getTime() - poll.date.getTime()) / millisecondsPerDay));
                         
                         const weight = 1 / (daysBeforeElection + 1); 
@@ -627,7 +588,7 @@
                 };
 
                 const calculateJitterFactors = async () => {
-                    console.log("Calculating new jitter factors from historical data (Senedd Methodology)...");
+                    console.log("Calculating new jitter factors from historical data...");
                     const partyPollingErrors = { constituency: {}, regional: {} };
                     parties.forEach(p => {
                         partyPollingErrors.constituency[p.name] = [];
@@ -636,39 +597,40 @@
 
                     for (const election of historicalElectionGids) {
                         try {
-                            const prePollsUrlConst = `${appsScriptProxyUrl}?gid=${election.constituencyGid}`;
-                            const prePollsUrlReg = `${appsScriptProxyUrl}?gid=${election.regionalGid}`;
-                            const resultUrl = `${appsScriptProxyUrl}?gid=${election.resultGid}`;
-
-                            const [prePollsConstResponse, prePollsRegResponse, resultResponse] = await Promise.all([
-                                fetch(prePollsUrlConst), 
-                                fetch(prePollsUrlReg),
-                                fetch(resultUrl)
+                            const prePollsUrlConst = `${exportBaseUrl}&gid=${election.constituencyGid}`;
+                            const prePollsUrlReg = `${exportBaseUrl}&gid=${election.regionalGid}`;
+                            
+                            const [prePollsConstResponse, prePollsRegResponse] = await Promise.all([
+                                fetch(prePollsUrlConst, { cache: 'no-cache' }), 
+                                fetch(prePollsUrlReg, { cache: 'no-cache' })
                             ]);
 
-                            if (!prePollsConstResponse.ok || !prePollsRegResponse.ok || !resultResponse.ok) {
-                                console.error(`HTTP error fetching data for ${election.year}! Skipping jitter calculation for this year.`);
-                                continue;
+                            if (!prePollsConstResponse.ok) {
+                                throw new Error(`HTTP error fetching historical constituency data for ${election.year}! Status: ${prePollsConstResponse.status}`);
+                            }
+                            if (!prePollsRegResponse.ok) {
+                                throw new Error(`HTTP error fetching historical regional data for ${election.year}! Status: ${prePollsRegResponse.status}`);
                             }
                             
-                            const prePollsConst = parseGoogleSheetData(await prePollsConstResponse.text(), true, `Historical Pre-Polls ${election.year} Const`);
-                            const prePollsReg = parseGoogleSheetData(await prePollsRegResponse.text(), true, `Historical Pre-Polls ${election.year} Reg`);
+                            const constCsvText = await prePollsConstResponse.text();
+                            const regCsvText = await prePollsRegResponse.text();
+
+                            const electionResultConstData = parseGoogleSheetData(constCsvText, `Result ${election.year} Const`, 1, 2);
+                            const electionResultRegData = parseGoogleSheetData(regCsvText, `Result ${election.year} Reg`, 1, 2);
                             
-                            if (prePollsConst.length < 2 || prePollsReg.length < 2) {
-                                console.warn(`Not enough pre-election polls for ${election.year} to calculate a meaningful average.`);
+                            const prePollsConst = parseGoogleSheetData(constCsvText, `Polls ${election.year} Const`, 2);
+                            const prePollsReg = parseGoogleSheetData(regCsvText, `Polls ${election.year} Reg`, 2);
+                            
+                            if (prePollsConst.length < 2 || prePollsReg.length < 2 || electionResultConstData.length === 0 || electionResultRegData.length === 0) {
+                                console.warn(`Not enough data for ${election.year} to calculate a meaningful average. Skipping.`);
                                 continue;
                             }
 
                             const weightedAvgConstPoll = calculateWeightedAverageForPolls(prePollsConst, election.electionDate);
                             const weightedAvgRegPoll = calculateWeightedAverageForPolls(prePollsReg, election.electionDate);
 
-                            const electionResultData = parseGoogleSheetData(await resultResponse.text(), false, `Historical Results ${election.year}`);
-                            if (electionResultData.length < 2) {
-                                console.warn(`Actual election results for ${election.year} do not contain enough data. Skipping jitter calculation.`);
-                                continue;
-                            }
-                            const actualResultConst = normalizeVotes(electionResultData[0].parties);
-                            const actualResultReg = normalizeVotes(electionResultData[1].parties);
+                            const actualResultConst = normalizeVotes(electionResultConstData[0].parties);
+                            const actualResultReg = normalizeVotes(electionResultRegData[0].parties);
 
                             parties.forEach(p => {
                                 if (actualResultConst[p.name] !== undefined && weightedAvgConstPoll[p.name] !== undefined) {
@@ -720,32 +682,34 @@
 
                     for (const election of historicalElectionGids) {
                         try {
-                            const constUrl = `${appsScriptProxyUrl}?gid=${election.constituencyGid}`;
-                            const regUrl = `${appsScriptProxyUrl}?gid=${election.regionalGid}`;
-                            const resultUrl = `${appsScriptProxyUrl}?gid=${election.resultGid}`;
+                            const constUrl = `${exportBaseUrl}&gid=${election.constituencyGid}`;
+                            const regUrl = `${exportBaseUrl}&gid=${election.regionalGid}`;
 
-                            const [constResponse, regResponse, resultResponse] = await Promise.all([fetch(constUrl), fetch(regUrl), fetch(resultUrl)]);
+                            const [constResponse, regResponse] = await Promise.all([fetch(constUrl, { cache: 'no-cache' }), fetch(regUrl, { cache: 'no-cache' })]);
 
-                            if (!constResponse.ok || !regResponse.ok || !resultResponse.ok) {
-                                console.error(`HTTP error fetching historical data for ${election.year}! Skipping trends for this year.`);
-                                continue; 
+                            if (!constResponse.ok) {
+                                throw new Error(`HTTP error fetching historical constituency data for ${election.year}! Status: ${constResponse.status}`);
+                            }
+                            if (!regResponse.ok) {
+                                throw new Error(`HTTP error fetching historical regional data for ${election.year}! Status: ${regResponse.status}`);
                             }
 
                             const constCsvText = await constResponse.text();
                             const regCsvText = await regResponse.text();
-
-                            let allConstPollsForElection = parseGoogleSheetData(constCsvText, true, `Historical ${election.year} Constituency`); 
-                            let allRegPollsForElection = parseGoogleSheetData(regCsvText, true, `Historical ${election.year} Regional`);
                             
-                            const electionResultData = parseGoogleSheetData(await resultResponse.text(), false, `Historical Results ${election.year}`);
+                            const electionResultConstData = parseGoogleSheetData(constCsvText, `Result ${election.year} Const`, 1, 2);
+                            const electionResultRegData = parseGoogleSheetData(regCsvText, `Result ${election.year} Reg`, 1, 2);
                             
-                            if (allConstPollsForElection.length === 0 || allRegPollsForElection.length === 0 || electionResultData.length < 2) {
+                            let allConstPollsForElection = parseGoogleSheetData(constCsvText, `Polls ${election.year} Const`, 2); 
+                            let allRegPollsForElection = parseGoogleSheetData(regCsvText, `Polls ${election.year} Reg`, 2);
+                            
+                            if (allConstPollsForElection.length === 0 || allRegPollsForElection.length === 0 || electionResultConstData.length === 0 || electionResultRegData.length === 0) {
                                 console.warn(`Data missing for ${election.year} (pre-polls or results). Cannot calculate trend. Skipping.`);
                                 continue;
                             }
 
-                            const actualConstResult = normalizeVotes(electionResultData[0].parties);
-                            const actualRegResult = normalizeVotes(electionResultData[1].parties);
+                            const actualConstResult = normalizeVotes(electionResultConstData[0].parties);
+                            const actualRegResult = normalizeVotes(electionResultRegData[0].parties);
 
                             let pollsForWeightedAvgConst = allConstPollsForElection.filter(p => p.date && p.date.getTime() < election.electionDate.getTime());
                             let pollsForWeightedAvgReg = allRegPollsForElection.filter(p => p.date && p.date.getTime() < election.electionDate.getTime());
@@ -1160,7 +1124,7 @@
                             averageSeats[p.name] = {
                                 constituency: (seatTotaler[p.name].constituency / numSimulations), 
                                 regional: (seatTotaler[p.name].regional / numSimulations),  
-                                total: (seatTotaler[p.name].total / numSimulations)       };
+                                total: (seatTotaler[p.name].total / numSimulations)    };
                         });
                         
                         Object.keys(coalitionSeatTotals).forEach(key => { 
@@ -1169,7 +1133,7 @@
                             averageCoalitionSeats[key] = (coalitionSeatTotals[key] / numSimulations); 
                         });
 
-                        lastSimResults = { majorityProbabilities, pluralityProbabilities, averageSeats };
+                        lastSimResults = { majorityProbabilities, pluralityProbabilities, averageSeats, baseCoalitionSeniorityTracker };
                         
                         const rawCoalitionsForDisplay = Object.keys(averageCoalitionSeats).map(key => { 
                             return {
@@ -1214,7 +1178,7 @@
                         });
 
                         renderProbabilities(majorityProbabilities, pluralityProbabilities);
-                        renderCoalitionProbabilities(coalitionMajorityProbs, coalitionNearMajorityProbs, averageCoalitionSeats, coalitionMaxSeats, averageSeats, baseCoalitionSeniorityTracker);
+                        renderCoalitionProbabilities();
                         renderForecastedSeats(averageSeats);
                         renderKeyTakeaways(); 
 
@@ -1536,5 +1500,3 @@
     </script>
 </body>
 </html>
-
-
