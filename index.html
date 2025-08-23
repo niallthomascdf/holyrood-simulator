@@ -104,8 +104,8 @@
                 <h3 class="font-semibold mt-4 text-gray-700">Polling Trends & Jitter:</h3>
                 <ul class="list-disc list-inside ml-4 text-xs space-y-1">
                     <li><b>Rolling Average:</b> The simulation starts with a rolling average of the <b>last 5 polls</b> to establish a baseline for party support.</li>
-                    <li><b>Jitter (Senedd Methodology):</b> A random "jitter" is added to each party's poll number in every simulation. This jitter is a measure of the party's historical polling volatility, calculated as the <b>standard deviation</b> of the difference between a party's final pre-election polling average and its actual election result from past Holyrood elections. This gives a more accurate representation of each party's historical predictability.</li>
-                    <li><b>Historical Trends (Senedd Methodology):</b> The simulation incorporates an <b>averaged historical trend</b> derived from past Scottish Parliament elections. For each historical election, a <b>weighted average of all pre-election polls</b> is calculated (giving more weight to polls closer to the election date). The trend for that election is then the difference between the actual election result and this weighted average of pre-election polls. These individual election trends are then averaged, with <b>more recent election years receiving a higher weight</b>, to create the overall historical trend applied to current polling.</li>
+                    <li><b>Jitter (Holyrood Methodology):</b> A random "jitter" is added to each party's poll number in every simulation. This jitter is a measure of the party's historical polling volatility, calculated as the <b>standard deviation</b> of the difference between a party's final pre-election polling average and its actual election result from past Holyrood elections. This gives a more accurate representation of each party's historical predictability.</li>
+                    <li><b>Historical Trends (Holyrood Methodology):</b> The simulation incorporates an <b>averaged historical trend</b> derived from past Scottish Parliament elections. For each historical election, a <b>weighted average of all pre-election polls</b> is calculated (giving more weight to polls closer to the election date). The trend for that election is then the difference between the actual election result and this weighted average of pre-election polls. These individual election trends are then averaged, with <b>more recent election years receiving a higher weight</b>, to create the overall historical trend applied to current polling.</li>
                 </ul>
                 
                 <h3 class="font-semibold mt-4 text-gray-700">Important Notes:</h3>
@@ -372,15 +372,15 @@
                     'Other': 'Others' 
                 };
 
-                // --- NEW: Use a more direct export link format ---
+                // --- Use a more direct export link format ---
                 const sheetId = "183G691mjKmxFq9bNZmo4MmeBGfUkRbZMBxmaz5PLy8k";
                 const exportBaseUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
                 
-                // --- UPDATED: GIDs for current polls ---
+                // --- GIDs for current polls ---
                 const constituencyGid = '1550759519'; 
                 const regionalGid = '182062955';   
 
-                // --- UPDATED: Historical Election GIDs (2003 removed) ---
+                // --- Historical Election GIDs ---
                 const historicalElectionGids = [
                     { year: 2021, constituencyGid: '819802892', regionalGid: '1188969757', electionDate: new Date('2021-05-06T00:00:00Z'), yearWeight: 1.0 },
                     { year: 2016, constituencyGid: '718925928', regionalGid: '89652159', electionDate: new Date('2016-05-05T00:00:00Z'), yearWeight: 0.75 },
@@ -429,8 +429,8 @@
                 // --- Data Fetching and Parsing Functions ---
                 const parseGoogleSheetData = (csvText, sheetName = "Unknown Sheet", dataStartRow = 1, dataEndRow = -1) => {
                     const polls = [];
-                    const lines = csvText.split('\n');
-                    if (lines.length <= 1) return [];
+                    const lines = csvText.split('\n').map(l => l.trim()).filter(l => l);
+                    if (lines.length < dataStartRow + 1) return [];
 
                     const rawHeaders = lines[0].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(h => h.trim().replace(/^"|"$/g, ''));
                     const headerMap = {};
@@ -444,8 +444,8 @@
 
                     const endRow = dataEndRow === -1 ? lines.length : dataEndRow;
 
-                    for (let i = dataStartRow; i < endRow; i++) {
-                        const line = lines[i].trim();
+                    for (let i = dataStartRow; i < endRow && i < lines.length; i++) {
+                        const line = lines[i];
                         if (!line) continue;
 
                         const rawValues = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.trim().replace(/^"|"$/g, ''));
@@ -457,11 +457,7 @@
 
                         if (dateColumnIndex !== -1 && rawValues[dateColumnIndex] !== undefined) {
                             rawDateString = rawValues[dateColumnIndex].trim();
-                            
-                            const dateMatch = rawDateString.match(/(\d{1,2}\s[A-Za-z]+\s\d{4})/);
-                            const dateToParse = dateMatch ? dateMatch[0] : rawDateString;
-
-                            const parsedDate = new Date(dateToParse);
+                            const parsedDate = new Date(rawDateString);
                             if (!isNaN(parsedDate.getTime())) {
                                 pollDate = parsedDate;
                             }
@@ -745,7 +741,7 @@
                             finalAveragedTrend.regional[p.name] = totalYearWeightForReg > 0 ? (allRegionalTrendsSum[p.name] / totalYearWeightForReg) : 0;
                         });
 
-                        console.log("Averaged Historical Trends (Senedd Methodology):", finalAveragedTrend);
+                        console.log("Averaged Historical Trends (Holyrood Methodology):", finalAveragedTrend);
                     } else {
                         parties.forEach(p => {
                             finalAveragedTrend.constituency[p.name] = 0;
@@ -1124,7 +1120,7 @@
                             averageSeats[p.name] = {
                                 constituency: (seatTotaler[p.name].constituency / numSimulations), 
                                 regional: (seatTotaler[p.name].regional / numSimulations),  
-                                total: (seatTotaler[p.name].total / numSimulations)    };
+                                total: (seatTotaler[p.name].total / numSimulations)   };
                         });
                         
                         Object.keys(coalitionSeatTotals).forEach(key => { 
